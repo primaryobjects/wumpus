@@ -3,19 +3,27 @@ class Entity extends React.Component {
     super(props);
   }
 
-  render() {
+  offset() {
     // Adjust offset to position icon on grid.
-    let leftOffset = 25;
-    let topOffset = 5;
+    let left = 25;
+    let top = 5;
     const container = $('#app');
     if (container.length) {
       const rect = container[0].getBoundingClientRect();
-      leftOffset = rect.left + 15;
-      topOffset = rect.top + 5;
+      left = rect.left + 15;
+      top = rect.top + 5;
     }
 
+    return { top, left };
+  }
+
+  render() {
+    const offset = this.offset();
     return (
-      <i class={ `entity ${this.props.cellStyle || ''}` } style={{ top: `${this.props.y * this.props.height + topOffset}px`, left: `${this.props.x * this.props.width + leftOffset}px`, color: this.props.color }}></i>
+      <div class="entity-container">
+        <i class={ `entity ${this.props.cellStyle || ''}` } style={{ top: `${this.props.y * this.props.height + offset.top}px`, left: `${this.props.x * this.props.width + offset.left}px`, color: this.props.color }}></i>
+        { this.props.children }
+      </div>
     );
   }
 }

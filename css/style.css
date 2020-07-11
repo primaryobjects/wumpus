@@ -22,6 +22,19 @@
   font-size: 10px;
 }
 
+.percept-container {
+  float: right;
+}
+
+.entity.percept {
+  margin-top: 5px;
+  margin-right: 2px;
+}
+
+.entity.anchor {
+  margin-left: 3px;
+}
+
 #graph {
   min-height: 200px;
 }
