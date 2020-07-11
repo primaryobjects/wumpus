@@ -31,15 +31,15 @@ class Game extends React.Component {
     const { width, height } = this.props;
 
     if (width && nextProps.width !== width) {
-      this.reset({ width });
+      this.reset();
     }
 
     if (height && nextProps.height !== height) {
-      this.reset({ height });
+      this.reset();
     }
   }
 
-  reset(params = {}) {
+  reset() {
     this.setState(this.getState(this.props), () => {
       this.hint(this.state.x, this.state.y);
     });
