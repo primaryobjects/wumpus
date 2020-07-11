@@ -1,0 +1,55 @@
+.cell {
+  width: 50px;
+  height: 50px;
+  line-height: 0;
+  border: 1px solid black;
+  transition: background-color 0.25s;
+}
+
+.cell.small {
+  width: 10px;
+  height: 10px;
+}
+
+.entity {
+  margin: 3px 0 0 12px;
+  font-size: 40px;
+  transition: all 0.25s;
+}
+
+.entity.small {
+  margin: 0;
+  font-size: 10px;
+}
+
+#graph {
+  min-height: 200px;
+}
+
+#graph .ml-1 {
+  margin-left: 20px !important;
+}
+
+#graph .ml-2 {
+  margin-left: 40px !important;
+}
+
+#graph .ml-3 {
+  margin-left: 60px !important;
+}
+
+#graph .ml-4 {
+  margin-left: 80px !important;
+}
+
+#graph .ml-5 {
+  margin-left: 100px !important;
+}
+
+.gamePlayOptions span {
+  margin-right: 12px;
+}
+
+.gamePlayOptions input[type='number'] {
+  width: 50px;
+}
