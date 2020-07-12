@@ -105,6 +105,7 @@ class Game extends React.Component {
 
       //
       // TODO: Calculate if cell is up, right, down, left of player and then fire arrow.
+      // Calculate if wumpus is in same direction from player, if so, mark the wumpus as dead.
       //
 
       // Callback handler for parent container to disable the shoot button.
