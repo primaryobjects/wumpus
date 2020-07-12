@@ -137,12 +137,22 @@ class Game extends React.Component {
   }
 
   renderPlayer(x, y, map) {
+    // Find all unique percepts for the player on this tile. Note, the spread operator filters out duplicates.
+    const percepts = [...new Set(map[y][x].filter(p =>
+      [ WumpusManager.constants.breeze,
+        WumpusManager.constants.stench,
+        WumpusManager.constants.glitter ]
+      .includes(p)
+    ))];
+
+    // Render the player and percept indicators.
     return (
       <Entity width="50" height="50" x={x} y={y} cellStyle="player fas fa-female" color="deeppink">
         <div class="percept-container">
-          {map[y][x].includes(WumpusManager.constants.breeze) && this.renderEntity(x, y, 'small percept fas fa-water', 'blue')}
-          {map[y][x].includes(WumpusManager.constants.stench) && this.renderEntity(x, y, 'small percept fas fa-skull-crossbones', 'darkred')}
-          {map[y][x].includes(WumpusManager.constants.glitter) && this.renderEntity(x, y, 'small percept fas fa-gem', 'gold')}
+          { percepts.map(percept => {
+              return (this.renderEntity(x, y, `small percept ${WumpusManager.percept(percept).icon}`, WumpusManager.percept(percept).color))
+            })
+          }
         </div>
       </Entity>
     );
@@ -157,13 +167,13 @@ class Game extends React.Component {
       for (let x = 0; x < width; x++) {
         map[y][x].forEach(entity => {
           if (entity === WumpusManager.constants.pit) {
-            objects.push(this.renderEntity(x, y, `anchor fas fa-square ${this.state.cheat ? '' : 'd-none'}`, 'black'));
+            objects.push(this.renderEntity(x, y, `anchor ${WumpusManager.icon(WumpusManager.constants.pittile)} ${this.state.cheat ? '' : 'd-none'}`, 'black'));
           }
           else if (entity === WumpusManager.constants.wumpus) {
-            objects.push(this.renderEntity(x, y, `anchor fab fa-optin-monster ${this.state.cheat ? '' : 'd-none'}`, 'red'));
+            objects.push(this.renderEntity(x, y, `anchor ${WumpusManager.icon(WumpusManager.constants.wumpus)} ${this.state.cheat ? '' : 'd-none'}`, 'red'));
           }
           else if (entity === WumpusManager.constants.gold) {
-            objects.push(this.renderEntity(x, y, `anchor fas fa-gem ${this.state.cheat ? '' : 'd-none'}`, 'gold'));
+            objects.push(this.renderEntity(x, y, `anchor ${WumpusManager.icon(WumpusManager.constants.gold)} ${this.state.cheat ? '' : 'd-none'}`, 'gold'));
           }
         });
       }

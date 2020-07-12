@@ -9,6 +9,8 @@ const WumpusManager = {
     stench: 5,
     glitter: 6,
     arrow: 7,
+    pittile: 8,
+    crossbones: 9,
   },
 
   generate: (width, height) => {
@@ -103,6 +105,9 @@ const WumpusManager = {
       case WumpusManager.constants.pit:
         icon = 'fas fa-skull-crossbones';
         break;
+      case WumpusManager.constants.pittile:
+        icon = 'fas fa-square';
+        break;
       case WumpusManager.constants.wumpus:
         icon = 'fab fa-optin-monster';
         break;
@@ -112,10 +117,36 @@ const WumpusManager = {
       case WumpusManager.constants.arrow:
         icon = 'fas fa-bullseye';
         break;
-        default:
+      case WumpusManager.constants.crossbones:
+        icon = 'fas fa-skull-crossbones';
+        break;
+      case WumpusManager.constants.breeze:
+        icon = 'fas fa-water';
+        break;
+      default:
         break;
     }
 
     return icon;
+  },
+
+  percept(type) {
+    let indicator = null;
+
+    switch (type) {
+      case WumpusManager.constants.breeze:
+        indicator = { icon: WumpusManager.icon(WumpusManager.constants.breeze), color: 'blue' };
+        break;
+      case WumpusManager.constants.stench:
+        indicator = { icon: WumpusManager.icon(WumpusManager.constants.crossbones), color: 'darkred' };
+        break;
+      case WumpusManager.constants.glitter:
+        indicator = { icon: WumpusManager.icon(WumpusManager.constants.gold), color: 'gold' };
+        break;
+      default:
+        break;
+    }
+
+    return indicator;
   }
 };
