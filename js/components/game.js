@@ -145,7 +145,7 @@ class Game extends React.Component {
       .includes(p)
     ))];
 
-    // Render the player and percept indicators.
+    // Render the player and percept indicators (go through each percept found in this cell and render the corresponding icon and color).
     return (
       <Entity width="50" height="50" x={x} y={y} cellStyle="player fas fa-female" color="deeppink">
         <div class="percept-container">
