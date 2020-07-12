@@ -8,6 +8,7 @@ class Game extends React.Component {
     this.hint = this.hint.bind(this);
     this.reset = this.reset.bind(this);
     this.cheat = this.cheat.bind(this);
+    this.shoot = this.shoot.bind(this);
     this.onGrid = this.onGrid.bind(this);
   }
 
@@ -21,6 +22,9 @@ class Game extends React.Component {
       x: 0,
       y: props.height - 1,
       moves: 0,
+      arrows: 1,
+      arrowLocation: null,
+      readyArrow: false,
       cheat: false,
       gameOver: false,
       dungeon: WumpusManager.generate(props.width, props.height),
@@ -42,11 +46,16 @@ class Game extends React.Component {
   reset() {
     this.setState(this.getState(this.props), () => {
       this.hint(this.state.x, this.state.y);
+      this.props.onArrow(this.state.arrows);
     });
   }
 
   cheat() {
     this.setState({ cheat: !this.state.cheat });
+  }
+
+  shoot() {
+    this.setState({ readyArrow: !this.state.readyArrow });
   }
 
   hint(x, y) {
@@ -78,17 +87,43 @@ class Game extends React.Component {
     }
   }
 
-  onGrid(x, y, values) {
+  onGrid(x, y) {
     if (this.state.gameOver) {
       // When the game is over, the next click resets the game.
       this.reset();
+    }
+    else if (this.state.readyArrow) {
+      // This click fires an arrow in the direction.
+      const arrowLocation = { x: this.state.x, y: this.state.y };
+      const arrows = this.state.arrows - 1;
+
+      // Add the arrow to the player cell in order to render the status message.
+      const dungeon = this.state.dungeon;
+      dungeon[arrowLocation.y][arrowLocation.x].push(WumpusManager.constants.arrow);
+
+      this.setState({ arrows, dungeon, arrowLocation, readyArrow: false });
+
+      //
+      // TODO: Calculate if cell is up, right, down, left of player and then fire arrow.
+      //
+
+      // Callback handler for parent container to disable the shoot button.
+      this.props.onArrow(arrows);
     }
     else if (GameManager.isValidMove(x, y, this.state.x, this.state.y, this.grid.current.props.width, this.grid.current.props.height)) {
       // Display a hint.
       this.hint(x, y);
 
+      const dungeon = this.state.dungeon;
+      if (this.state.arrowLocation) {
+        // If the player just fired an arrow, on this move remove the arrow from the cell to hide the message.
+        const objects = dungeon[this.state.arrowLocation.y][this.state.arrowLocation.x];
+        objects.splice(objects.indexOf(WumpusManager.constants.arrow));
+        dungeon[this.state.arrowLocation.y][this.state.arrowLocation.x] = objects;
+      }
+
       // Update state and play opponent's turn.
-      this.setState({ x, y, moves: this.state.moves+1 });
+      this.setState({ x, y, dungeon, arrowLocation: null, moves: this.state.moves+1 });
 
       return true;
     }
@@ -137,8 +172,6 @@ class Game extends React.Component {
   }
 
   renderGoal(x, y, map, goal, color, title, text, offset = 0, className = 'alert-danger') {
-    const icon = WumpusManager.icon(goal);
-
     return (
       map[y][x].includes(goal) ?
         <div class={`mt-1 pl-2 alert ${className} show`} role="alert" style={{width: '400px'}}>
@@ -167,6 +200,7 @@ class Game extends React.Component {
         { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.gold, 'gold', 'You win!', `You found the treasure in ${this.state.moves} moves!`, 0, 'alert-warning') }
         { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.wumpus, 'red', 'You lose!', 'You were eaten by the Wumpus!', -5) }
         { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.pit, 'black', 'You lose!', 'You fall into a deep dark pit.', -2) }
+        { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.arrow, 'black', 'You Shoot!', `You fire your arrow.`, -2, null) }
       </div>
     );
   }

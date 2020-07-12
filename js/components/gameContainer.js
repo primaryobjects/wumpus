@@ -5,6 +5,7 @@ class GameContainer extends React.Component {
     this.state = {
       width: props.width || 4,
       height: props.height || 4,
+      arrows: 1
     };
 
     this.game = React.createRef();
@@ -12,6 +13,8 @@ class GameContainer extends React.Component {
     this.onHeight = this.onHeight.bind(this);
     this.onReset = this.onReset.bind(this);
     this.onCheat = this.onCheat.bind(this);
+    this.onShoot = this.onShoot.bind(this);
+    this.onArrow = this.onArrow.bind(this);
   }
 
   onWidth(e) {
@@ -30,10 +33,18 @@ class GameContainer extends React.Component {
     this.game.current.cheat();
   }
 
+  onShoot() {
+    this.state.arrows && this.game.current.shoot();
+  }
+
+  onArrow(arrows) {
+    this.setState({ arrows });
+  }
+
   render() {
     return (
       <div>
-        <Game width={ this.state.width } height={ this.state.height } ref={ this.game }></Game>
+        <Game width={ this.state.width } height={ this.state.height } onArrow={this.onArrow} ref={ this.game }></Game>
 
         <div class="gamePlayOptions mt-3">
             <div class='row'>
@@ -41,7 +52,7 @@ class GameContainer extends React.Component {
                 Grid Size
               </div>
             </div>
-            <div class='row'>
+            <div class='row no-gutters'>
               <div class='col-auto'>
                 <input type="number" id="width" name="width" min="3" value={this.state.width} onChange={ this.onWidth }/>
               </div>
@@ -52,9 +63,15 @@ class GameContainer extends React.Component {
                 <input type="button" id="reset" name="reset" value="Reset" onClick={ this.onReset }/>
               </div>
               <div class='col-auto'>
+                <button type="button" class={`btn btn-${this.state.arrows ? 'primary' : 'secondary disabled'} btn-sm`} data-toggle="button" aria-pressed="false" autocomplete="off" onClick={this.onShoot}>
+                  <i class="fas fa-bullseye mr-1" />
+                  Shoot <span class="badge badge-light ml-1 mr-0">{this.state.arrows}</span>
+                </button>
+              </div>
+              <div class='col-auto'>
                 <button type="button" class="btn btn-secondary btn-sm" data-toggle="button" aria-pressed="false" autocomplete="off" onClick={this.onCheat}>
                   <i class="fas fa-theater-masks mr-1" />
-                  Cheat Mode
+                  Cheat
                 </button>
               </div>
             </div>

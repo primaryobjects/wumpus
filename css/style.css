@@ -66,3 +66,12 @@
 .gamePlayOptions input[type='number'] {
   width: 50px;
 }
+
+.gamePlayOptions .no-gutters>.col, .no-gutters>[class*=col-] {
+  padding-right: 10px;
+}
+
+.btn.disabled:focus,.btn.disabed:active {
+  outline: none !important;
+  box-shadow: none;
+}

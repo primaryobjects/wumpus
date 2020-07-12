@@ -8,6 +8,7 @@ const WumpusManager = {
     breeze: 4,
     stench: 5,
     glitter: 6,
+    arrow: 7,
   },
 
   generate: (width, height) => {
@@ -108,7 +109,10 @@ const WumpusManager = {
       case WumpusManager.constants.gold:
         icon = 'fa fa-gem';
         break;
-      default:
+      case WumpusManager.constants.arrow:
+        icon = 'fas fa-bullseye';
+        break;
+        default:
         break;
     }
 
