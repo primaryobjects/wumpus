@@ -94,40 +94,69 @@ class Game extends React.Component {
     }
   }
 
-  render() {
-    // Generate objects in the dungeon, starting with the player and any percepts.
-    const entities = [
-      <Entity width="50" height="50" x={ this.state.x } y={ this.state.y } cellStyle="player fas fa-female" color="deeppink">
-        <div class="percept-container">
-          { this.state.dungeon[this.state.y][this.state.x].includes(WumpusManager.constants.breeze) &&
-              <Entity width="50" height="50" x={ this.state.x } y={ this.state.y } cellStyle="small percept fas fa-water" color="blue"></Entity>
-          }
-          { this.state.dungeon[this.state.y][this.state.x].includes(WumpusManager.constants.stench) &&
-              <Entity width="50" height="50" x={ this.state.x } y={ this.state.y } cellStyle="small percept fas fa-skull-crossbones" color="darkred"></Entity>
-          }
-          { this.state.dungeon[this.state.y][this.state.x].includes(WumpusManager.constants.glitter) &&
-              <Entity width="50" height="50" x={ this.state.x } y={ this.state.y } cellStyle="small percept fas fa-gem" color="gold"></Entity>
-          }
-        </div>
-      </Entity>,
-    ];
+  renderEntity(x, y, className, color) {
+    return (
+      <Entity width="50" height="50" x={x} y={y} cellStyle={className} color={color}></Entity>
+    );
+  }
 
-    // Add mobs to the dungeon.
-    for (let y=0; y<this.state.height; y++) {
-      for (let x=0; x<this.state.width; x++) {
-        this.state.dungeon[y][x].forEach(entity => {
+  renderPlayer(x, y, map) {
+    return (
+      <Entity width="50" height="50" x={x} y={y} cellStyle="player fas fa-female" color="deeppink">
+        <div class="percept-container">
+          {map[y][x].includes(WumpusManager.constants.breeze) && this.renderEntity(x, y, 'small percept fas fa-water', 'blue')}
+          {map[y][x].includes(WumpusManager.constants.stench) && this.renderEntity(x, y, 'small percept fas fa-skull-crossbones', 'darkred')}
+          {map[y][x].includes(WumpusManager.constants.glitter) && this.renderEntity(x, y, 'small percept fas fa-gem', 'gold')}
+        </div>
+      </Entity>
+    );
+  }
+
+  renderObjects(map) {
+    const objects = [];
+    const height = map.length;
+    const width = map[0].length;
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        map[y][x].forEach(entity => {
           if (entity === WumpusManager.constants.pit) {
-            entities.push(<Entity width="50" height="50" x={x} y={y} cellStyle={`anchor fas fa-square ${this.state.cheat ? '' : 'd-none'}`} color="black"></Entity>);
+            objects.push(this.renderEntity(x, y, `anchor fas fa-square ${this.state.cheat ? '' : 'd-none'}`, 'black'));
           }
           else if (entity === WumpusManager.constants.wumpus) {
-            entities.push(<Entity width="50" height="50" x={x} y={y} cellStyle={`anchor fab fa-optin-monster ${this.state.cheat ? '' : 'd-none'}`} color="red"></Entity>);
+            objects.push(this.renderEntity(x, y, `anchor fab fa-optin-monster ${this.state.cheat ? '' : 'd-none'}`, 'red'));
           }
           else if (entity === WumpusManager.constants.gold) {
-            entities.push(<Entity width="50" height="50" x={x} y={y} cellStyle={`anchor fas fa-gem ${this.state.cheat ? '' : 'd-none'}`} color="gold"></Entity>);
+            objects.push(this.renderEntity(x, y, `anchor fas fa-gem ${this.state.cheat ? '' : 'd-none'}`, 'gold'));
           }
         });
       }
     }
+
+    return objects;
+  }
+
+  renderGoal(x, y, map, goal, color, title, text, offset = 0, className = 'alert-danger') {
+    const icon = WumpusManager.icon(goal);
+
+    return (
+      map[y][x].includes(goal) ?
+        <div class={`mt-1 pl-2 alert ${className} show`} role="alert" style={{width: '400px'}}>
+          <div style={{float: 'left'}}>
+            <i class={`${WumpusManager.icon(goal)} mr-2`} style={{fontSize: '30px', marginTop: `${offset}px`, color}}></i>
+          </div>
+          <div>
+            <strong>{title}</strong> {text}
+          </div>
+        </div> : null
+    );
+  }
+
+  render() {
+    // Generate objects in the dungeon, starting with the player and any percepts.
+    const entities = [ this.renderPlayer(this.state.x, this.state.y, this.state.dungeon) ].concat(
+      this.renderObjects(this.state.dungeon)
+    );
 
     return (
       <div id='app' ref={ this.container }>
@@ -135,38 +164,9 @@ class Game extends React.Component {
           { entities }
         </Grid>
 
-        { this.state.dungeon[this.state.y][this.state.x].includes(WumpusManager.constants.gold) &&
-            <div class="mt-1 pl-2 alert alert-warning show" role="alert" style={{width: '400px'}}>
-            <div style={{float: 'left'}}>
-              <i class="fa fa-gem mr-2" style={{fontSize: '30px', color: 'gold'}}></i>
-            </div>
-            <div>
-              <strong>You win!</strong> You found the treasure in { this.state.moves } moves!
-            </div>
-          </div>
-        }
-
-        { this.state.dungeon[this.state.y][this.state.x].includes(WumpusManager.constants.wumpus) &&
-            <div class="mt-1 pl-2 alert alert-danger show" role="alert" style={{width: '400px'}}>
-            <div style={{float: 'left'}}>
-              <i class="fab fa-optin-monster mr-2" style={{fontSize: '30px', color: 'red'}}></i>
-            </div>
-            <div>
-              <strong>You lose!</strong> You were eaten by the Wumpus!
-            </div>
-          </div>
-        }
-
-        { this.state.dungeon[this.state.y][this.state.x].includes(WumpusManager.constants.pit) &&
-            <div class="mt-1 pl-2 alert alert-danger show" role="alert" style={{width: '400px'}}>
-              <div style={{float: 'left'}}>
-                <i class="fas fa-skull-crossbones mr-2" style={{fontSize: '30px', paddingTop: '8px', color: 'black'}}></i>
-              </div>
-              <div>
-                <strong>You lose!</strong> You fall into a deep dark pit, never to be seen again.
-              </div>
-            </div>
-        }
+        { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.gold, 'gold', 'You win!', `You found the treasure in ${this.state.moves} moves!`, 0, 'alert-warning') }
+        { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.wumpus, 'red', 'You lose!', 'You were eaten by the Wumpus!', -5) }
+        { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.pit, 'black', 'You lose!', 'You fall into a deep dark pit.', -2) }
       </div>
     );
   }

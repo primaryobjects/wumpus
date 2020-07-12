@@ -94,4 +94,24 @@ const WumpusManager = {
 
     return rows;
   },
+
+  icon(goal) {
+    let icon = null;
+
+    switch (goal) {
+      case WumpusManager.constants.pit:
+        icon = 'fas fa-skull-crossbones';
+        break;
+      case WumpusManager.constants.wumpus:
+        icon = 'fab fa-optin-monster';
+        break;
+      case WumpusManager.constants.gold:
+        icon = 'fa fa-gem';
+        break;
+      default:
+        break;
+    }
+
+    return icon;
+  }
 };
