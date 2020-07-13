@@ -55,7 +55,20 @@ class Game extends React.Component {
   }
 
   shoot() {
-    this.setState({ readyArrow: !this.state.readyArrow });
+    const readyArrow = !this.state.readyArrow;
+    const dungeon = this.state.dungeon;
+
+    if (readyArrow) {
+      dungeon[this.state.y][this.state.x].push(WumpusManager.constants.readyArrow);
+    }
+    else {
+      // Remove the question prompt.
+      const objects = dungeon[this.state.y][this.state.x];
+      objects.splice(objects.indexOf(WumpusManager.constants.readyArrow));
+      dungeon[this.state.y][this.state.x] = objects;
+    }
+
+    this.setState({ dungeon, readyArrow });
   }
 
   hint(x, y) {
@@ -96,10 +109,17 @@ class Game extends React.Component {
       // This click fires an arrow in the direction.
       const arrowLocation = { x: this.state.x, y: this.state.y };
       const arrows = this.state.arrows - 1;
+      const dungeon = this.state.dungeon;
+      const objects = dungeon[arrowLocation.y][arrowLocation.x];
+
+      // Remove the question prompt.
+      objects.splice(objects.indexOf(WumpusManager.constants.readyArrow));
 
       // Add the arrow to the player cell in order to render the status message.
-      const dungeon = this.state.dungeon;
-      dungeon[arrowLocation.y][arrowLocation.x].push(WumpusManager.constants.arrow);
+      objects.push(WumpusManager.constants.arrow);
+
+      // Update the objects in the cell.
+      dungeon[this.state.y][this.state.x] = objects;
 
       this.setState({ arrows, dungeon, arrowLocation, readyArrow: false });
 
@@ -211,6 +231,7 @@ class Game extends React.Component {
         { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.gold, 'gold', 'You win!', `You found the treasure in ${this.state.moves} moves!`, 0, 'alert-warning') }
         { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.wumpus, 'red', 'You lose!', 'You were eaten by the Wumpus!', -5) }
         { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.pit, 'black', 'You lose!', 'You fall into a deep dark pit.', -2) }
+        { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.readyArrow, 'black', 'Bow ready.', `Click the direction to shoot.`, -2, null) }
         { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.arrow, 'black', 'You Shoot!', `You fire your arrow.`, -2, null) }
       </div>
     );
