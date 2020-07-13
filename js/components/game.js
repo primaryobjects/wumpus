@@ -13,8 +13,8 @@ class Game extends React.Component {
   }
 
   getState(props) {
-    const width = props.width;// || this.state.width;
-    const height = props.height;// || this.state.height;
+    const width = props.width;
+    const height = props.height;
 
     return {
       width,
