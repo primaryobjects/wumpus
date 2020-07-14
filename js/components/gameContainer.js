@@ -5,6 +5,7 @@ class GameContainer extends React.Component {
     this.state = {
       width: props.width || 4,
       height: props.height || 4,
+      arrowState: WumpusManager.constants.arrowState.none,
       arrows: 1,
       reset: 0,
       cheat: false,
@@ -36,17 +37,33 @@ class GameContainer extends React.Component {
   }
 
   onShoot() {
-    this.state.arrows && this.game.current.shoot();
+    if (this.state.arrows) {
+      let arrowState = this.state.arrowState;
+
+      switch (arrowState) {
+        case WumpusManager.constants.arrowState.none:
+          arrowState = WumpusManager.constants.arrowState.armed;
+          break;
+        case WumpusManager.constants.arrowState.armed:
+          arrowState = WumpusManager.constants.arrowState.none;
+          break;
+        default:
+          break;
+      }
+
+      this.setState({ arrowState });
+    }
   }
 
-  onUpdateArrows(arrows) {
-    this.setState({ arrows });
+  onUpdateArrows(arrows = 1, arrowState = WumpusManager.constants.arrowState.none) {
+    // Callback handler to update arrow count and state from child.
+    this.setState({ arrows, arrowState });
   }
 
   render() {
     return (
       <div>
-        <Game width={ this.state.width } height={ this.state.height } updateArrows={ this.onUpdateArrows } reset={ this.state.reset } cheatMode={ this.state.cheat } ref={ this.game }></Game>
+        <Game width={ this.state.width } height={ this.state.height } arrows={ this.state.arrows } arrowState={ this.state.arrowState } updateArrows={ this.onUpdateArrows } cheatMode={ this.state.cheat } reset={ this.state.reset }></Game>
 
         <div class="gamePlayOptions mt-3">
             <div class='row'>
@@ -65,7 +82,7 @@ class GameContainer extends React.Component {
                 <input type="button" id="reset" name="reset" value="Reset" onClick={ this.onReset }/>
               </div>
               <div class='col-auto'>
-                <button type="button" class={ `btn btn-${ this.state.arrows ? 'primary' : 'secondary disabled' } btn-sm` } data-toggle="button" aria-pressed="false" autocomplete="off" onClick={ this.onShoot }>
+                <button type="button" id="btn-shoot" class={ `btn btn-${ this.state.arrows ? 'primary' : 'secondary disabled' } btn-sm ${ this.state.arrowState === WumpusManager.constants.arrowState.armed ? 'active' : ''}` } data-toggle="button" aria-pressed="false" autocomplete="off" onClick={ this.onShoot }>
                   <i class="fas fa-bullseye mr-1" />
                   Shoot <span class="badge badge-light ml-1 mr-0">{this.state.arrows}</span>
                 </button>

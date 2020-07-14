@@ -12,6 +12,11 @@ const WumpusManager = {
     arrow: 8,
     pittile: 9,
     crossbones: 10,
+    arrowState: {
+      none: 0,
+      armed: 1,
+      fired: 2,
+    },
   },
 
   generate: (width, height) => {
