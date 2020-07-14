@@ -22,6 +22,10 @@
   font-size: 10px;
 }
 
+.entity.fade {
+  opacity: 0;
+}
+
 .percept-container {
   float: right;
 }
@@ -33,6 +37,10 @@
 
 .entity.anchor {
   margin-left: 3px;
+}
+
+.entity.player {
+  transition: opacity 2s ease-in-out;
 }
 
 #graph {

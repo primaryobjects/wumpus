@@ -5,16 +5,20 @@ class Game extends React.Component {
     this.state = this.getState(this.props);
 
     this.grid = React.createRef();
-    this.hint = this.hint.bind(this);
     this.reset = this.reset.bind(this);
     this.cheat = this.cheat.bind(this);
     this.shoot = this.shoot.bind(this);
+    this.print = this.print.bind(this);
     this.onGrid = this.onGrid.bind(this);
   }
 
   getState(props) {
     const width = props.width;
     const height = props.height;
+    const arrows = 1;
+
+    // Callback handler for parent container to disable the shoot button.
+    this.props.onArrow(arrows);
 
     return {
       width,
@@ -22,11 +26,12 @@ class Game extends React.Component {
       x: 0,
       y: props.height - 1,
       moves: 0,
-      arrows: 1,
+      arrows,
       arrowLocation: null,
       readyArrow: false,
       cheat: false,
       gameOver: false,
+      message: null,
       dungeon: WumpusManager.generate(props.width, props.height),
     }
   }
@@ -34,20 +39,15 @@ class Game extends React.Component {
   componentDidUpdate(nextProps) {
     const { width, height } = this.props;
 
-    if (width && nextProps.width !== width) {
-      this.reset();
-    }
-
-    if (height && nextProps.height !== height) {
+    if ((width && nextProps.width !== width) ||
+        (height && nextProps.height !== height)) {
       this.reset();
     }
   }
 
   reset() {
-    this.setState(this.getState(this.props), () => {
-      this.hint(this.state.x, this.state.y);
-      this.props.onArrow(this.state.arrows);
-    });
+    this.setState(this.getState(this.props));
+    this.props.onArrow(this.state.arrows);
   }
 
   cheat() {
@@ -56,98 +56,116 @@ class Game extends React.Component {
 
   shoot() {
     const readyArrow = !this.state.readyArrow;
-    const dungeon = this.state.dungeon;
-
-    if (readyArrow) {
-      dungeon[this.state.y][this.state.x].push(WumpusManager.constants.readyArrow);
-    }
-    else {
-      // Remove the question prompt.
-      const objects = dungeon[this.state.y][this.state.x];
-      objects.splice(objects.indexOf(WumpusManager.constants.readyArrow));
-      dungeon[this.state.y][this.state.x] = objects;
-    }
-
-    this.setState({ dungeon, readyArrow });
+    this.setState({ readyArrow, message: null }, () => {
+      this.update(this.state.dungeon[this.state.y][this.state.x]);
+    });
   }
 
-  hint(x, y) {
+  update(room) {
+    let gameOk = true;
+
     // Check percepts.
-    if (this.state.dungeon[y][x].includes(WumpusManager.constants.breeze)) {
+    if (room.includes(WumpusManager.constants.breeze)) {
       console.log('You feel a breeze.');
     }
 
-    if (this.state.dungeon[y][x].includes(WumpusManager.constants.stench)) {
+    if (room.includes(WumpusManager.constants.stench)) {
       console.log('You smell a stench.');
     }
 
-    if (this.state.dungeon[y][x].includes(WumpusManager.constants.glitter)) {
+    if (room.includes(WumpusManager.constants.glitter)) {
       console.log('You see a glitter.');
     }
 
+    if (this.state.readyArrow) {
+      console.log('Bow ready. Click the direction to shoot.');
+      this.print('Bow ready.', `Click the direction to shoot.`, 'black', WumpusManager.constants.question, -2);
+    }
+    else if (this.state.arrowLocation) {
+      console.log('You shoot! You fire your arrow.');
+      this.print('You Shoot!', `You fire your arrow.`, 'black', WumpusManager.constants.arrow, -2);
+    }
+
     // Check end game conditions.
-    if (this.state.dungeon[y][x].includes(WumpusManager.constants.gold)) {
+    if (room.includes(WumpusManager.constants.gold)) {
       console.log('You found the gold! You win!');
-      this.setState({ gameOver: true });
+      this.print('You win!', `You found the treasure in ${this.state.moves} moves!`, 'gold', WumpusManager.constants.gold, 0, 'alert-warning');
+      gameOk = false;
     }
-    else if (this.state.dungeon[y][x].includes(WumpusManager.constants.wumpus)) {
+    else if (room.includes(WumpusManager.constants.wumpus)) {
       console.log('You are eaten by the Wumpus! You lose!');
-      this.setState({ gameOver: true });
+      this.print('You lose!', 'You were eaten by the Wumpus!', 'red', WumpusManager.constants.wumpus, -5, 'alert-danger');
+      gameOk = false;
     }
-    else if (this.state.dungeon[y][x].includes(WumpusManager.constants.pit)) {
+    else if (room.includes(WumpusManager.constants.pit)) {
       console.log('You fall in a pit! You lose!');
-      this.setState({ gameOver: true });
+      this.print('You lose!', 'You fall into a deep dark pit.', 'black', WumpusManager.constants.crossbones, -2, 'alert-danger');
+      gameOk = false;
     }
+
+    return gameOk;
   }
 
   onGrid(x, y) {
-    if (this.state.gameOver) {
-      // When the game is over, the next click resets the game.
-      this.reset();
-    }
-    else if (this.state.readyArrow) {
-      // This click fires an arrow in the direction.
-      const arrowLocation = { x: this.state.x, y: this.state.y };
-      const arrows = this.state.arrows - 1;
-      const dungeon = this.state.dungeon;
-      const objects = dungeon[arrowLocation.y][arrowLocation.x];
+    if (!this.state.gameOver) {
+      let playerLocation = { x: this.state.x, y: this.state.y };
+      let arrowLocation = null;
+      let arrows = this.state.arrows;
+      let message = null;
 
-      // Remove the question prompt.
-      objects.splice(objects.indexOf(WumpusManager.constants.readyArrow));
+      if (this.state.gameOver) {
+        // When the game is over, the next click resets the game.
+        this.reset();
+      }
+      else if (this.state.readyArrow) {
+        // This click fires an arrow in the direction.
+        arrows--;
+        message = null;
+        arrowLocation = { x, y };
 
-      // Add the arrow to the player cell in order to render the status message.
-      objects.push(WumpusManager.constants.arrow);
+        //
+        // TODO: Calculate if cell is up, right, down, left of player and then fire arrow.
+        // Calculate if wumpus is in same direction from player, if so, mark the wumpus as dead.
+        //
 
-      // Update the objects in the cell.
-      dungeon[this.state.y][this.state.x] = objects;
-
-      this.setState({ arrows, dungeon, arrowLocation, readyArrow: false });
-
-      //
-      // TODO: Calculate if cell is up, right, down, left of player and then fire arrow.
-      // Calculate if wumpus is in same direction from player, if so, mark the wumpus as dead.
-      //
-
-      // Callback handler for parent container to disable the shoot button.
-      this.props.onArrow(arrows);
-    }
-    else if (GameManager.isValidMove(x, y, this.state.x, this.state.y, this.grid.current.props.width, this.grid.current.props.height)) {
-      // Display a hint.
-      this.hint(x, y);
-
-      const dungeon = this.state.dungeon;
-      if (this.state.arrowLocation) {
-        // If the player just fired an arrow, on this move remove the arrow from the cell to hide the message.
-        const objects = dungeon[this.state.arrowLocation.y][this.state.arrowLocation.x];
-        objects.splice(objects.indexOf(WumpusManager.constants.arrow));
-        dungeon[this.state.arrowLocation.y][this.state.arrowLocation.x] = objects;
+        // Callback handler for parent container to disable the shoot button.
+        this.props.onArrow(arrows);
+      }
+      else if (GameManager.isValidMove(x, y, this.state.x, this.state.y, this.grid.current.props.width, this.grid.current.props.height)) {
+        // Update player location with new move.
+        playerLocation = { x, y };
       }
 
-      // Update state and play opponent's turn.
-      this.setState({ x, y, dungeon, arrowLocation: null, moves: this.state.moves+1 });
+      // Update state.
+      this.setState({ arrows, arrowLocation, message, x: playerLocation.x, y: playerLocation.y, moves: this.state.moves + 1, readyArrow: false }, () => {
+        if (!this.update(this.state.dungeon[playerLocation.y][playerLocation.x])) {
+          // Game over.
+          this.setState({ gameOver: true });
 
-      return true;
+          // Fade out player and reset the game.
+          setTimeout(() => {
+            // Game over.
+            this.reset();
+          }, 3000);
+        }
+      });
     }
+    else {
+      console.log('Tilt!');
+    }
+  }
+
+  print(title, text, color = 'black', icon = WumpusManager.constants.clear, offset = 0, className = null) {
+    this.setState({ message:
+      <div class={`mt-1 pl-2 alert ${className} show`} role="alert" style={{width: '400px'}}>
+        <div style={{float: 'left'}}>
+          <i class={`${WumpusManager.icon(icon)} mr-2`} style={{fontSize: '30px', marginTop: `${offset}px`, color}}></i>
+        </div>
+        <div>
+          <strong>{title}</strong> {text}
+        </div>
+      </div>
+    });
   }
 
   renderEntity(x, y, className, color) {
@@ -167,13 +185,14 @@ class Game extends React.Component {
 
     // Render the player and percept indicators (go through each percept found in this cell and render the corresponding icon and color).
     return (
-      <Entity width="50" height="50" x={x} y={y} cellStyle="player fas fa-female" color="deeppink">
-        <div class="percept-container">
-          { percepts.map(percept => {
-              return (this.renderEntity(x, y, `small percept ${WumpusManager.percept(percept).icon}`, WumpusManager.percept(percept).color))
-            })
-          }
-        </div>
+      <Entity width="50" height="50" x={x} y={y} cellStyle={`player fas fa-female ${this.state.gameOver ? 'fade' : '' }`} color="deeppink">
+        { !this.state.gameOver && <div class="percept-container">
+            { percepts.map(percept => {
+                return (this.renderEntity(x, y, `small percept ${WumpusManager.percept(percept).icon}`, WumpusManager.percept(percept).color))
+              })
+            }
+          </div>
+        }
       </Entity>
     );
   }
@@ -202,20 +221,6 @@ class Game extends React.Component {
     return objects;
   }
 
-  renderGoal(x, y, map, goal, color, title, text, offset = 0, className = 'alert-danger') {
-    return (
-      map[y][x].includes(goal) ?
-        <div class={`mt-1 pl-2 alert ${className} show`} role="alert" style={{width: '400px'}}>
-          <div style={{float: 'left'}}>
-            <i class={`${WumpusManager.icon(goal)} mr-2`} style={{fontSize: '30px', marginTop: `${offset}px`, color}}></i>
-          </div>
-          <div>
-            <strong>{title}</strong> {text}
-          </div>
-        </div> : null
-    );
-  }
-
   render() {
     // Generate objects in the dungeon, starting with the player and any percepts.
     const entities = [ this.renderPlayer(this.state.x, this.state.y, this.state.dungeon) ].concat(
@@ -227,12 +232,7 @@ class Game extends React.Component {
         <Grid width={ this.state.width } height={ this.state.height } grid={ this.props.grid } cellStyle={ this.props.cellStyle } onClick={ this.onGrid } ref={ this.grid }>
           { entities }
         </Grid>
-
-        { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.gold, 'gold', 'You win!', `You found the treasure in ${this.state.moves} moves!`, 0, 'alert-warning') }
-        { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.wumpus, 'red', 'You lose!', 'You were eaten by the Wumpus!', -5) }
-        { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.pit, 'black', 'You lose!', 'You fall into a deep dark pit.', -2) }
-        { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.readyArrow, 'black', 'Bow ready.', `Click the direction to shoot.`, -2, null) }
-        { this.renderGoal(this.state.x, this.state.y, this.state.dungeon, WumpusManager.constants.arrow, 'black', 'You Shoot!', `You fire your arrow.`, -2, null) }
+        { this.state.message }
       </div>
     );
   }

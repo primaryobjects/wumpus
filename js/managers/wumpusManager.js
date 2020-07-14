@@ -8,7 +8,7 @@ const WumpusManager = {
     breeze: 4,
     stench: 5,
     glitter: 6,
-    readyArrow: 7,
+    question: 7,
     arrow: 8,
     pittile: 9,
     crossbones: 10,
@@ -115,7 +115,7 @@ const WumpusManager = {
       case WumpusManager.constants.gold:
         icon = 'fa fa-gem';
         break;
-      case WumpusManager.constants.readyArrow:
+      case WumpusManager.constants.question:
         icon = 'fas fa-question-circle';
         break;
       case WumpusManager.constants.arrow:
