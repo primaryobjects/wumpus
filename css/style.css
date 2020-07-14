@@ -43,6 +43,15 @@
   transition: opacity 2s ease-in-out;
 }
 
+.entity.arrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: top 1s linear, left 1s linear;
+  font-size: 26px;
+  color: red;
+}
+
 #graph {
   min-height: 200px;
 }

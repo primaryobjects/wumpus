@@ -25,6 +25,7 @@ class Game extends React.Component {
       moves: 0,
       gameOver: false,
       message: null,
+      arrow: null,
       dungeon: WumpusManager.generate(props.width, props.height),
     }
   }
@@ -119,10 +120,52 @@ class Game extends React.Component {
         else if (this.props.arrowState === WumpusManager.constants.arrowState.armed) {
           // This click fires an arrow in the direction.
           isMove = false;
+          let direction = 'up';
+
+          if (x > playerLocation.x) {
+            // Shoot right.
+            direction = 'right';
+          }
+          else if (x < playerLocation.x) {
+            // Shoot left.
+            direction = 'left';
+          }
+          else if (y > playerLocation.y) {
+            // Shoot down.
+            direction = 'down'
+          }
+          else {
+            // Shoot up.
+            direction = 'up';
+          }
+
+          this.setState({ arrow: this.renderEntity(playerLocation.x, playerLocation.y, `arrow fas fa-arrow-${direction}`) }, () => {
+            setTimeout(() => {
+              switch (direction) {
+                case 'up':
+                  $('.arrow').css('top', '0px');
+                  break;
+                case 'right':
+                  $('.arrow').css('left', '500px');
+                  break;
+                case 'down':
+                  $('.arrow').css('top', '500px');
+                  break;
+                case 'left':
+                  $('.arrow').css('left', '0px');
+                  break;
+                default:
+                  break;
+              }
+            }, 5);
+
+            setTimeout(() => {
+              this.setState({ arrow: null });
+            }, 1000);
+          });
 
           //
-          // TODO: Calculate if cell is up, right, down, left of player and then fire arrow.
-          // Calculate if wumpus is in same direction from player, if so, mark the wumpus as dead.
+          // TODO: Calculate if wumpus is in same direction from player, if so, mark the wumpus as dead.
           //
 
           // Callback handler for parent container to update the arrow count and disable the shoot button.
@@ -233,6 +276,7 @@ class Game extends React.Component {
           { entities }
         </Grid>
         { this.state.message }
+        { this.state.arrow }
       </div>
     );
   }
