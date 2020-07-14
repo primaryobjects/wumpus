@@ -6,7 +6,6 @@ class Game extends React.Component {
 
     this.grid = React.createRef();
     this.reset = this.reset.bind(this);
-    this.cheat = this.cheat.bind(this);
     this.shoot = this.shoot.bind(this);
     this.print = this.print.bind(this);
     this.onGrid = this.onGrid.bind(this);
@@ -17,8 +16,8 @@ class Game extends React.Component {
     const height = props.height;
     const arrows = 1;
 
-    // Callback handler for parent container to disable the shoot button.
-    this.props.onArrow(arrows);
+    // Callback handler for parent container to update arrow count.
+    this.props.updateArrows(arrows);
 
     return {
       width,
@@ -29,7 +28,6 @@ class Game extends React.Component {
       arrows,
       arrowLocation: null,
       readyArrow: false,
-      cheat: false,
       gameOver: false,
       message: null,
       dungeon: WumpusManager.generate(props.width, props.height),
@@ -37,21 +35,17 @@ class Game extends React.Component {
   }
 
   componentDidUpdate(nextProps) {
-    const { width, height } = this.props;
+    const { width, height, reset } = this.props;
 
     if ((width && nextProps.width !== width) ||
-        (height && nextProps.height !== height)) {
+        (height && nextProps.height !== height) ||
+        (reset && nextProps.reset !== reset)) {
       this.reset();
     }
   }
 
   reset() {
     this.setState(this.getState(this.props));
-    this.props.onArrow(this.state.arrows);
-  }
-
-  cheat() {
-    this.setState({ cheat: !this.state.cheat });
   }
 
   shoot() {
@@ -129,7 +123,7 @@ class Game extends React.Component {
         //
 
         // Callback handler for parent container to disable the shoot button.
-        this.props.onArrow(arrows);
+        this.props.updateArrows(arrows);
       }
       else if (GameManager.isValidMove(x, y, this.state.x, this.state.y, this.grid.current.props.width, this.grid.current.props.height)) {
         // Update player location with new move.
@@ -206,13 +200,13 @@ class Game extends React.Component {
       for (let x = 0; x < width; x++) {
         map[y][x].forEach(entity => {
           if (entity === WumpusManager.constants.pit) {
-            objects.push(this.renderEntity(x, y, `anchor ${WumpusManager.icon(WumpusManager.constants.pittile)} ${this.state.cheat ? '' : 'd-none'}`, 'black'));
+            objects.push(this.renderEntity(x, y, `anchor ${WumpusManager.icon(WumpusManager.constants.pittile)} ${this.props.cheatMode ? '' : 'd-none'}`, 'black'));
           }
           else if (entity === WumpusManager.constants.wumpus) {
-            objects.push(this.renderEntity(x, y, `anchor ${WumpusManager.icon(WumpusManager.constants.wumpus)} ${this.state.cheat ? '' : 'd-none'}`, 'red'));
+            objects.push(this.renderEntity(x, y, `anchor ${WumpusManager.icon(WumpusManager.constants.wumpus)} ${this.props.cheatMode ? '' : 'd-none'}`, 'red'));
           }
           else if (entity === WumpusManager.constants.gold) {
-            objects.push(this.renderEntity(x, y, `anchor ${WumpusManager.icon(WumpusManager.constants.gold)} ${this.state.cheat ? '' : 'd-none'}`, 'gold'));
+            objects.push(this.renderEntity(x, y, `anchor ${WumpusManager.icon(WumpusManager.constants.gold)} ${this.props.cheatMode ? '' : 'd-none'}`, 'gold'));
           }
         });
       }
