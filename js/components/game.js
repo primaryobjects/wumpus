@@ -183,18 +183,6 @@ class Game extends React.Component {
     }
   }
 
-  killWumpus(player, direction) {
-    let wumpusDirection;
-    if (this.state.dungeon.wumpus.x === player.x) {
-      wumpusDirection = this.state.dungeon.wumpus.y > player.y ? 'down' : 'up';
-    }
-    else if (this.state.dungeon.wumpus.y === player.y) {
-      wumpusDirection = this.state.dungeon.wumpus.x > player.x ? 'right' : 'left';
-    }
-
-    return direction === wumpusDirection;
-  }
-
   shootArrow(player, direction) {
     this.setState({ arrow: this.renderEntity(player.x, player.y, `arrow fas fa-arrow-${direction}`) }, () => {
       setTimeout(() => {
@@ -221,8 +209,8 @@ class Game extends React.Component {
       }, 1000);
     });
 
-    // Calculate if wumpus is in same direction from player, if so, mark the wumpus as dead.
-    return this.killWumpus(player, direction) ?
+    // Calculate if wumpus is in same direction from player as the arrow direction, if so, mark the wumpus as dead.
+    return direction === WumpusManager.direction(player, this.state.dungeon.wumpus) ?
             WumpusManager.constants.arrowState.kill :
             WumpusManager.constants.arrowState.fired;
   }

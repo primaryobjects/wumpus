@@ -105,6 +105,19 @@ const WumpusManager = {
     return rows;
   },
 
+  direction(a, b) {
+    // Calculates the direction of object b with respect to object a.
+    let direction;
+    if (a.x === b.x) {
+      direction = b.y > a.y ? 'down' : 'up';
+    }
+    else if (a.y === b.y) {
+      direction = b.x > a.x ? 'right' : 'left';
+    }
+
+    return direction;
+  },
+
   icon(goal) {
     let icon = null;
 
