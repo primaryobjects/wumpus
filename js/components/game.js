@@ -59,6 +59,10 @@ class Game extends React.Component {
       console.log('You shoot! You fire your arrow.');
       this.print('You Shoot!', `You fire your arrow.`, 'black', WumpusManager.constants.arrow, -2);
     }
+    else if (this.props.arrowState === WumpusManager.constants.arrowState.kill) {
+      console.log('You shoot! You hear a thump on the ground.');
+      this.print('You shoot!', `You hear a thump on the ground.`, 'black', WumpusManager.constants.arrow, -2);
+    }
     else if (this.props.arrowState === WumpusManager.constants.arrowState.none) {
       console.log('You put down your bow.');
       this.print();
@@ -101,6 +105,7 @@ class Game extends React.Component {
 
   onGrid(x, y) {
     if (!this.state.gameOver) {
+      const dungeon = this.state.dungeon;
       let playerLocation = { x: this.state.x, y: this.state.y };
       let message = null;
 
@@ -139,37 +144,18 @@ class Game extends React.Component {
             direction = 'up';
           }
 
-          this.setState({ arrow: this.renderEntity(playerLocation.x, playerLocation.y, `arrow fas fa-arrow-${direction}`) }, () => {
-            setTimeout(() => {
-              switch (direction) {
-                case 'up':
-                  $('.arrow').css('top', '0px');
-                  break;
-                case 'right':
-                  $('.arrow').css('left', '500px');
-                  break;
-                case 'down':
-                  $('.arrow').css('top', '500px');
-                  break;
-                case 'left':
-                  $('.arrow').css('left', '0px');
-                  break;
-                default:
-                  break;
-              }
-            }, 5);
+          // Draw the arrow being fired and check if we've killed the wumpus.
+          const arrowState = this.shootArrow(playerLocation, direction);
 
-            setTimeout(() => {
-              this.setState({ arrow: null });
-            }, 1000);
-          });
-
-          //
-          // TODO: Calculate if wumpus is in same direction from player, if so, mark the wumpus as dead.
-          //
+          // Remove a dead wumpus from the map.
+          if (arrowState === WumpusManager.constants.arrowState.kill) {
+            const index = dungeon.map[this.state.dungeon.wumpus.y][this.state.dungeon.wumpus.x]
+                            .indexOf(WumpusManager.constants.wumpus);
+            dungeon.map[this.state.dungeon.wumpus.y][this.state.dungeon.wumpus.x].splice(index);
+          }
 
           // Callback handler for parent container to update the arrow count and disable the shoot button.
-          this.props.updateArrows(this.props.arrows - 1, WumpusManager.constants.arrowState.fired);
+          this.props.updateArrows(this.props.arrows - 1, arrowState);
         }
 
         if (isMove && GameManager.isValidMove(x, y, this.state.x, this.state.y, this.grid.current.props.width, this.grid.current.props.height)) {
@@ -178,8 +164,8 @@ class Game extends React.Component {
         }
 
         // Update state.
-        this.setState({ message, x: playerLocation.x, y: playerLocation.y, moves: this.state.moves + 1 }, () => {
-          if (!this.update(this.state.dungeon[playerLocation.y][playerLocation.x])) {
+        this.setState({ dungeon, message, x: playerLocation.x, y: playerLocation.y, moves: this.state.moves + 1 }, () => {
+          if (!this.update(this.state.dungeon.map[playerLocation.y][playerLocation.x])) {
             // Game over.
             this.setState({ gameOver: true });
 
@@ -197,9 +183,53 @@ class Game extends React.Component {
     }
   }
 
+  killWumpus(player, direction) {
+    let wumpusDirection;
+    if (this.state.dungeon.wumpus.x === player.x) {
+      wumpusDirection = this.state.dungeon.wumpus.y > player.y ? 'down' : 'up';
+    }
+    else if (this.state.dungeon.wumpus.y === player.y) {
+      wumpusDirection = this.state.dungeon.wumpus.x > player.x ? 'right' : 'left';
+    }
+
+    return direction === wumpusDirection;
+  }
+
+  shootArrow(player, direction) {
+    this.setState({ arrow: this.renderEntity(player.x, player.y, `arrow fas fa-arrow-${direction}`) }, () => {
+      setTimeout(() => {
+        switch (direction) {
+          case 'up':
+            $('.arrow').css('top', '0px');
+            break;
+          case 'right':
+            $('.arrow').css('left', '500px');
+            break;
+          case 'down':
+            $('.arrow').css('top', '500px');
+            break;
+          case 'left':
+            $('.arrow').css('left', '0px');
+            break;
+          default:
+            break;
+        }
+      }, 5);
+
+      setTimeout(() => {
+        this.setState({ arrow: null });
+      }, 1000);
+    });
+
+    // Calculate if wumpus is in same direction from player, if so, mark the wumpus as dead.
+    return this.killWumpus(player, direction) ?
+            WumpusManager.constants.arrowState.kill :
+            WumpusManager.constants.arrowState.fired;
+  }
+
   print(title, text, color = 'black', icon = WumpusManager.constants.clear, offset = 0, className = null) {
     const message = title ?
-      <div class={`mt-1 pl-2 alert ${className} show`} role="alert" style={{width: '400px'}}>
+      <div class={`mt-1 pl-0 alert ${className} show`} role="alert" style={{width: '400px'}}>
         <div style={{float: 'left'}}>
           <i class={`${WumpusManager.icon(icon)} mr-2`} style={{fontSize: '30px', marginTop: `${offset}px`, color}}></i>
         </div>
@@ -266,8 +296,8 @@ class Game extends React.Component {
 
   render() {
     // Generate objects in the dungeon, starting with the player and any percepts.
-    const entities = [ this.renderPlayer(this.state.x, this.state.y, this.state.dungeon) ].concat(
-      this.renderObjects(this.state.dungeon)
+    const entities = [ this.renderPlayer(this.state.x, this.state.y, this.state.dungeon.map) ].concat(
+      this.renderObjects(this.state.dungeon.map)
     );
 
     return (
