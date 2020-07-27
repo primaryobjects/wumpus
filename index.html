@@ -9,14 +9,46 @@
   </head>
   <body>
     <div class='container'>
-      <h1>Hunt the Wumpus</h1>
-      <p class="lead text-muted">Navigate the dungeon. Avoid the pits. Find the gold. Beware of the Wumpus!</p>
-      <p>
-      <div id='root'></div>
-    </div>
-
-    <div class='container'>
-      <div id='graph'></div>
+      <div class='row'>
+        <div class='col'>
+          <h1>Hunt the Wumpus</h1>
+          <p class="lead text-muted">Navigate the dungeon. Avoid the pits. Find the gold. Beware of the Wumpus!</p>
+        </div>
+      </div>
+      <div class='row'>
+        <div class='col'>
+          <div id='root'></div>
+        </div>
+        <div class='col'>
+          <fieldset class='instructions'>
+            <legend>Perceptions</legend>
+            <div class='row'>
+              <div class='col-2'>
+                <img src='images/breeze.png' width='25px' title='You feel a breeze. A pit is nearby.' />
+              </div>
+              <div class='col percept'>
+                <p>You feel a breeze; a pit is near.</p>
+              </div>
+            </div>
+            <div class='row'>
+              <div class='col-2'>
+                <img src='images/stench.png' width='24px' title='You smell a stench. The Wumpus is nearby.' />
+              </div>
+              <div class='col percept'>
+                <p>You smell a stench; the wumpus is near.</p>
+              </div>
+            </div>
+            <div class='row'>
+              <div class='col-2'>
+                <img src='images/glitter.png' width='30px' title='You see a glitter. The gold is nearby.' />
+              </div>
+              <div class='col percept'>
+                <p>You see a glitter; the gold is near.</p>
+              </div>
+            </div>
+           </fieldset>
+        </div>
+      </div>
     </div>
 
     <footer class="text-muted">
