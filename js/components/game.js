@@ -8,6 +8,7 @@ class Game extends React.Component {
     this.reset = this.reset.bind(this);
     this.print = this.print.bind(this);
     this.onGrid = this.onGrid.bind(this);
+    this.displayMoves = this.displayMoves.bind(this);
   }
 
   getState(props) {
@@ -30,13 +31,21 @@ class Game extends React.Component {
     }
   }
 
+  componentDidMount() {
+    this.props.cheatMode && this.displayMoves();
+  }
+
   componentDidUpdate(nextProps) {
-    const { width, height, arrowState, reset } = this.props;
+    const { width, height, arrowState, reset, cheatMode } = this.props;
 
     if ((width && nextProps.width !== width) ||
         (height && nextProps.height !== height) ||
         (reset && nextProps.reset !== reset)) {
       this.reset();
+    }
+
+    if (nextProps.cheatMode !== cheatMode) {
+      this.displayMoves();
     }
 
     if (nextProps.arrowState !== arrowState) {
@@ -45,7 +54,26 @@ class Game extends React.Component {
   }
 
   reset() {
-    this.setState(this.getState(this.props));
+    this.setState(this.getState(this.props), () => {
+      this.props.cheatMode && this.displayMoves();
+    });
+  }
+
+  displayMoves() {
+    // Clear moves.
+    this.state && this.state.availableMoves && this.state.availableMoves.forEach(move => {
+      this.grid.current.setValue(move.x, move.y, null);
+    });
+
+    if (this.props.cheatMode) {
+      // Calculate available moves for player.
+      const availableMoves = GameManager.moves(this.state.x, this.state.y, this.props.width, this.props.height);
+      availableMoves.forEach(move => {
+        this.grid.current.setValue(move.x, move.y, 'aliceblue');
+      });
+
+      this.setState({ availableMoves });
+    }
   }
 
   update(room) {
@@ -159,7 +187,7 @@ class Game extends React.Component {
         }
 
         if (isMove && GameManager.isValidMove(x, y, this.state.x, this.state.y, this.grid.current.props.width, this.grid.current.props.height)) {
-          // Update player location with new move.
+          // Update player location with new mofve.
           playerLocation = { x, y };
         }
 
@@ -175,6 +203,9 @@ class Game extends React.Component {
               this.reset();
             }, 3000);
           }
+
+          // Update available player moves.
+          this.props.cheatMode && this.displayMoves();
         });
       }
     }
@@ -210,7 +241,7 @@ class Game extends React.Component {
     });
 
     // Calculate if wumpus is in same direction from player as the arrow direction, if so, mark the wumpus as dead.
-    return direction === WumpusManager.direction(player, this.state.dungeon.wumpus) ?
+    return direction === GameManager.direction(player, this.state.dungeon.wumpus) ?
             WumpusManager.constants.arrowState.kill :
             WumpusManager.constants.arrowState.fired;
   }
