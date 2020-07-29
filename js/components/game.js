@@ -18,6 +18,9 @@ class Game extends React.Component {
     // Callback handler for parent container to update the arrow count and disable the shoot button.
     this.props.updateArrows();
 
+    // Initialize the AI agent.
+    AiManager.initialize(0, props.height - 1, width, height);
+
     return {
       width,
       height,
@@ -55,7 +58,11 @@ class Game extends React.Component {
 
   reset() {
     this.setState(this.getState(this.props), () => {
+      // Display available player moves, if cheat mode is enabled.
       this.props.cheatMode && this.displayMoves();
+
+      // Update the AI agent.
+      AiManager.update(this.state.x, this.state.y, this.state.dungeon.map[this.state.y][this.state.x]);
     });
   }
 
@@ -92,7 +99,6 @@ class Game extends React.Component {
       this.print('You shoot!', `You hear a thump on the ground.`, 'black', WumpusManager.constants.arrow, -2);
     }
     else if (this.props.arrowState === WumpusManager.constants.arrowState.none) {
-      console.log('You put down your bow.');
       this.print();
     }
 
@@ -127,6 +133,10 @@ class Game extends React.Component {
         gameOk = false;
       }
     }
+
+    // Update the AI agent.
+    const bestMove = AiManager.update(this.state.x, this.state.y, room);
+    bestMove && console.log(bestMove);
 
     return gameOk;
   }
