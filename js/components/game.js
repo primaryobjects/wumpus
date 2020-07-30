@@ -9,6 +9,7 @@ class Game extends React.Component {
     this.print = this.print.bind(this);
     this.onGrid = this.onGrid.bind(this);
     this.displayMoves = this.displayMoves.bind(this);
+    this.updateAI = this.updateAI.bind(this);
   }
 
   getState(props) {
@@ -36,6 +37,9 @@ class Game extends React.Component {
 
   componentDidMount() {
     this.props.cheatMode && this.displayMoves();
+
+    // Update the AI agent.
+    this.updateAI();
   }
 
   componentDidUpdate(nextProps) {
@@ -62,7 +66,7 @@ class Game extends React.Component {
       this.props.cheatMode && this.displayMoves();
 
       // Update the AI agent.
-      AiManager.update(this.state.x, this.state.y, this.state.dungeon.map[this.state.y][this.state.x]);
+      this.updateAI();
     });
   }
 
@@ -135,8 +139,7 @@ class Game extends React.Component {
     }
 
     // Update the AI agent.
-    const bestMove = AiManager.update(this.state.x, this.state.y, room);
-    bestMove && console.log(bestMove);
+    this.updateAI(!gameOk);
 
     return gameOk;
   }
@@ -203,6 +206,9 @@ class Game extends React.Component {
 
         // Update state.
         this.setState({ dungeon, message, x: playerLocation.x, y: playerLocation.y, moves: this.state.moves + 1 }, () => {
+          // Update available player moves.
+          this.props.cheatMode && this.displayMoves();
+
           if (!this.update(this.state.dungeon.map[playerLocation.y][playerLocation.x])) {
             // Game over.
             this.setState({ gameOver: true });
@@ -213,14 +219,23 @@ class Game extends React.Component {
               this.reset();
             }, 3000);
           }
-
-          // Update available player moves.
-          this.props.cheatMode && this.displayMoves();
         });
       }
     }
     else {
       console.log('Tilt!');
+    }
+  }
+
+  updateAI(isGameOver) {
+    // Clear old hint.
+    this.state.bestMove && this.grid.current.setValue(this.state.bestMove.x, this.state.bestMove.y, null);
+
+    if (!isGameOver) {
+      // Show hint for best move.
+      const bestMove = AiManager.update(this.state.x, this.state.y, this.state.dungeon.map[this.state.y][this.state.x]);
+      this.grid.current.setValue(bestMove.x, bestMove.y, 'lavender');
+      this.setState({ bestMove });
     }
   }
 

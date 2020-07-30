@@ -35,7 +35,7 @@ const AiManager = {
       AiManager.deduce(x, y);
 
       // Set this room as visited and safe.
-      AiManager.knowledge[y][x].visited = true;
+      AiManager.knowledge[y][x].visited = AiManager.knowledge[y][x].visited ? AiManager.knowledge[y][x].visited + 1 : 1;
 
       return AiManager.move(x, y);
     }
@@ -78,22 +78,36 @@ const AiManager = {
     let room;
 
     const rooms = AiManager.availableRooms(x, y);
+
+    // Does an unvisited room contain a probability of gold >= 0.5?
     room = rooms.find(room => !room.knowledge.visited && room.knowledge.gold >= 0.5);
     if (!room) {
       room = rooms.find(room => !room.knowledge.visited && room.knowledge.gold >= 0.25 && room.knowledge.pit < 0.5 && room.knowledge.wumpus < 0.5);
     }
 
+    // Does a visited room contain a glitter?
+    if (!room) {
+      room = rooms.find(room => room.knowledge.glitter);
+    }
+
+    // Does an unvisited room contain a probability of a pit < 0.5 and no wumpus?
     if (!room) {
       room = rooms.find(room => !room.knowledge.visited && room.knowledge.pit < 0.5 && room.knowledge.wumpus === 0);
     }
+
+    // Does an unvisited room contain a probability of a wumpus < 0.5 and no pit?
     if (!room) {
       room = rooms.find(room => !room.knowledge.visited && room.knowledge.wumpus < 0.5 && room.knowledge.pit === 0);
     }
+
+    // Does an unvisited room contain a probability of pit and wumpus < 0.5?
     if (!room) {
       room = rooms.find(room => !room.knowledge.visited && room.knowledge.pit < 0.5 && room.knowledge.wumpus < 0.5);
     }
+
+    // If all else fails, backtrack to a previously visited room.
     if (!room) {
-      room = rooms.find(room => room.knowledge.visited);
+      room = rooms.sort((a, b) => { return a.knowledge.visited - b.knowledge.visited; })[0];
     }
 
     return room;
