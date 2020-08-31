@@ -18,6 +18,7 @@ class GameContainer extends React.Component {
     this.onCheat = this.onCheat.bind(this);
     this.onShoot = this.onShoot.bind(this);
     this.onUpdateArrows = this.onUpdateArrows.bind(this);
+    this.onKnowledge = this.onKnowledge.bind(this);
   }
 
   onWidth(e) {
@@ -60,10 +61,14 @@ class GameContainer extends React.Component {
     this.setState({ arrows, arrowState });
   }
 
+  onKnowledge(knowledge) {
+    this.setState({ knowledge });
+  }
+
   render() {
     return (
       <div>
-        <Game width={ this.state.width } height={ this.state.height } arrows={ this.state.arrows } arrowState={ this.state.arrowState } updateArrows={ this.onUpdateArrows } cheatMode={ this.state.cheat } reset={ this.state.reset }></Game>
+        <Game width={ this.state.width } height={ this.state.height } arrows={ this.state.arrows } arrowState={ this.state.arrowState } updateArrows={ this.onUpdateArrows } cheatMode={ this.state.cheat } reset={ this.state.reset } updateKnowledge={ this.onKnowledge }></Game>
 
         <div class="gamePlayOptions mt-3">
             <div class='row'>
@@ -92,6 +97,11 @@ class GameContainer extends React.Component {
                   <i class="fas fa-theater-masks mr-1" />
                   Cheat
                 </button>
+              </div>
+            </div>
+            <div class='row no-guggers'>
+              <div class='col-auto'>
+                <div id='knowledge' dangerouslySetInnerHTML={{__html: this.state.knowledge ? this.state.knowledge.replace(/\n/g, '<br>') : '' }}></div>
               </div>
             </div>
         </div>

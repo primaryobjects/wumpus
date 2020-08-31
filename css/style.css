@@ -117,3 +117,9 @@ fieldset.instructions {
   font-size: 13px;
   margin-top: 4px;
 }
+
+#knowledge {
+  font-size: 12px;
+  color: silver;
+  margin: 5px 0 5px 0;
+}

@@ -22,6 +22,9 @@ class Game extends React.Component {
     // Initialize the AI agent.
     AiManager.initialize(0, props.height - 1, width, height);
 
+    // Clear the knowledge display in the UI.
+    this.props.updateKnowledge();
+
     return {
       width,
       height,
@@ -236,6 +239,9 @@ class Game extends React.Component {
       const bestMove = AiManager.update(this.state.x, this.state.y, this.state.dungeon.map[this.state.y][this.state.x]);
       this.grid.current.setValue(bestMove.x, bestMove.y, 'lavender');
       this.setState({ bestMove });
+
+      // Update the knowledge display in the UI.
+      this.props.updateKnowledge(AiManager.toString());
     }
   }
 
