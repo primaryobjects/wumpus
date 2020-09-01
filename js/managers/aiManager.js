@@ -40,6 +40,7 @@ const AiManager = {
       AiManager.knowledge[y][x].visited = AiManager.knowledge[y][x].visited ? AiManager.knowledge[y][x].visited + 1 : 1;
       AiManager.knowledge[y][x].pit = 0;
       AiManager.knowledge[y][x].wumpus = 0;
+      AiManager.knowledge[y][x].gold = 0;
 
       return AiManager.move(x, y);
     }
@@ -142,37 +143,33 @@ const AiManager = {
 
     // All adjacent rooms are either visited or contain a possible enemy. Is there another unvisited room that is safe?
     if (!room) {
-      let closestSafeRoom = { distance: 9999 };
+      let closestSafeRoom = null;
       for (let ry=0; ry<AiManager.knowledge.length; ry++) {
-        // Find the closest unvisited safe room to the player, using the Manhatten distance.
-        const potentialRoom = AiManager.knowledge[ry].find(knowledge => (knowledge.x !== x || knowledge.y !== y) && knowledge.visited && !knowledge.pit && !knowledge.wumpus);
-        if (potentialRoom) {
-          // Calculate Manhatten distance.
-          const distance = Math.abs(potentialRoom.y - y) + Math.abs(potentialRoom.x - x);
-          if (distance < closestSafeRoom.distance) {
-            closestSafeRoom = { distance, room: potentialRoom };
-          }
+        // Find the least visited safe room.
+        const potentialSafeRoom = AiManager.knowledge[ry].find(knowledge => (knowledge.x !== x || knowledge.y !== y) && knowledge.visited && !knowledge.pit && !knowledge.wumpus);
+        if (potentialSafeRoom && (!closestSafeRoom || potentialSafeRoom.visited < closestSafeRoom.visited)) {
+          closestSafeRoom = potentialSafeRoom;
         }
       }
       // Finally, move in the safest direction of the room found.
-      if (closestSafeRoom.room) {
+      if (closestSafeRoom) {
         const closestSafeRooms = [];
-        if (closestSafeRoom.room.x < x) {
+        if (closestSafeRoom.x < x) {
           // Move left.
           closestSafeRooms.push(rooms.find(room => room.x < x && !room.knowledge.pit && !room.knowledge.wumpus));
         }
 
-        if (closestSafeRoom.room.x > x) {
+        if (closestSafeRoom.x > x) {
           // Move right.
           closestSafeRooms.push(rooms.find(room => room.x > x && !room.knowledge.pit && !room.knowledge.wumpus));
         }
 
-        if (closestSafeRoom.room.y < y) {
+        if (closestSafeRoom.y < y) {
           // Move up.
           closestSafeRooms.push(rooms.find(room => room.y < y && !room.knowledge.pit && !room.knowledge.wumpus));
         }
 
-        if (closestSafeRoom.room.y > y) {
+        if (closestSafeRoom.y > y) {
           // Move down.
           closestSafeRooms.push(rooms.find(room => room.y > y && !room.knowledge.pit && !room.knowledge.wumpus));
         }
@@ -241,7 +238,7 @@ const AiManager = {
       return false;
   },
 
-  pad: (pad, str, padLeft = true) => {
+  pad: (pad, str, padLeft) => {
     if (typeof str === 'undefined')
       return pad;
     if (padLeft) {
@@ -258,7 +255,7 @@ const AiManager = {
       result += '| ';
 
       for (let x=0; x < AiManager.knowledge[y].length; x++) {
-        result += `p: ${AiManager.pad('    ', AiManager.knowledge[y][x].pit)}, w: ${AiManager.pad('    ', AiManager.knowledge[y][x].wumpus)}, g: ${AiManager.pad('    ', AiManager.knowledge[y][x].gold)} | `;
+        result += `v: ${AiManager.pad('    ', AiManager.knowledge[y][x].visited)} p: ${AiManager.pad('    ', AiManager.knowledge[y][x].pit)} w: ${AiManager.pad('    ', AiManager.knowledge[y][x].wumpus)} g: ${AiManager.pad('    ', AiManager.knowledge[y][x].gold)} | `;
       }
       result += '\n';
     }

@@ -69,7 +69,7 @@ class Game extends React.Component {
       this.props.cheatMode && this.displayMoves();
 
       // Update the AI agent.
-      this.updateAI();
+      setTimeout(() => { this.updateAI(); }, 0);
     });
   }
 

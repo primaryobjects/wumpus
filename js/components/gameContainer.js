@@ -101,7 +101,7 @@ class GameContainer extends React.Component {
             </div>
             <div class='row no-guggers'>
               <div class='col-auto'>
-                <div id='knowledge' dangerouslySetInnerHTML={{__html: this.state.knowledge ? this.state.knowledge.replace(/\n/g, '<br>') : '' }}></div>
+                <div id='knowledge' dangerouslySetInnerHTML={{__html: this.state.knowledge ? this.state.knowledge.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;') : '' }}></div>
               </div>
             </div>
         </div>
