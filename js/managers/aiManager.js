@@ -143,39 +143,48 @@ const AiManager = {
 
     // All adjacent rooms are either visited or contain a possible enemy. Is there another unvisited room that is safe?
     if (!room) {
-      let closestSafeRoom = null;
+      const closestSafeRooms = [];
       for (let ry=0; ry<AiManager.knowledge.length; ry++) {
         // Find the least visited safe room.
-        const potentialSafeRoom = AiManager.knowledge[ry].find(knowledge => (knowledge.x !== x || knowledge.y !== y) && knowledge.visited && !knowledge.pit && !knowledge.wumpus);
-        if (potentialSafeRoom && (!closestSafeRoom || potentialSafeRoom.visited < closestSafeRoom.visited)) {
-          closestSafeRoom = potentialSafeRoom;
-        }
+        const potentialSafeRoom = AiManager.knowledge[ry].find(knowledge => (knowledge.x !== x || knowledge.y !== y) && !knowledge.pit && !knowledge.wumpus);
+        potentialSafeRoom && closestSafeRooms.push(potentialSafeRoom);
       }
+
+      // Sort by least visited.
+      closestSafeRooms.sort((a, b) => { return b.visited - a.visited; });
+
       // Finally, move in the safest direction of the room found.
-      if (closestSafeRoom) {
-        const closestSafeRooms = [];
+      let closestSafeRoom = {};
+      while (closestSafeRoom) {
+        closestSafeRoom = closestSafeRooms.pop();
+
+        // Choose the room that has the least visits to move to next.
+        const closestSafeRooms2 = [];
         if (closestSafeRoom.x < x) {
           // Move left.
-          closestSafeRooms.push(rooms.find(room => room.x < x && !room.knowledge.pit && !room.knowledge.wumpus));
+          closestSafeRooms2.push(rooms.find(room => room.x < x && !room.knowledge.pit && !room.knowledge.wumpus));
         }
 
         if (closestSafeRoom.x > x) {
           // Move right.
-          closestSafeRooms.push(rooms.find(room => room.x > x && !room.knowledge.pit && !room.knowledge.wumpus));
+          closestSafeRooms2.push(rooms.find(room => room.x > x && !room.knowledge.pit && !room.knowledge.wumpus));
         }
 
         if (closestSafeRoom.y < y) {
           // Move up.
-          closestSafeRooms.push(rooms.find(room => room.y < y && !room.knowledge.pit && !room.knowledge.wumpus));
+          closestSafeRooms2.push(rooms.find(room => room.y < y && !room.knowledge.pit && !room.knowledge.wumpus));
         }
 
         if (closestSafeRoom.y > y) {
           // Move down.
-          closestSafeRooms.push(rooms.find(room => room.y > y && !room.knowledge.pit && !room.knowledge.wumpus));
+          closestSafeRooms2.push(rooms.find(room => room.y > y && !room.knowledge.pit && !room.knowledge.wumpus));
         }
 
         // Choose the room that has the least visits to move to next.
-        room = closestSafeRooms.sort((a, b) => { return a.knowledge.visited - b.knowledge.visited; })[0];
+        room = closestSafeRooms2.sort((a, b) => { return a.knowledge.visited - b.knowledge.visited; })[0];
+        if (room) {
+          return room;
+        }
       }
     }
 
