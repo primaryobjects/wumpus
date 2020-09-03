@@ -146,7 +146,7 @@ const AiManager = {
       let closestSafeRoom = null;
       for (let ry=0; ry<AiManager.knowledge.length; ry++) {
         // Find the least visited safe room.
-        const potentialSafeRoom = AiManager.knowledge[ry].find(knowledge => (knowledge.x !== x || knowledge.y !== y) && knowledge.visited && !knowledge.pit && !knowledge.wumpus);
+        const potentialSafeRoom = AiManager.knowledge[ry].find(knowledge => (knowledge.x !== x || knowledge.y !== y) && !knowledge.pit && !knowledge.wumpus);
         if (potentialSafeRoom && (!closestSafeRoom || potentialSafeRoom.visited < closestSafeRoom.visited)) {
           closestSafeRoom = potentialSafeRoom;
         }
