@@ -158,7 +158,7 @@ const AiManager = {
       while (closestSafeRoom) {
         closestSafeRoom = closestSafeRooms.pop();
 
-        // Choose the room that has the least visits to move to next.
+        // Choose the adjacent room that has the least visits to move to next to reach target.
         const closestSafeRooms2 = [];
         if (closestSafeRoom.x < x) {
           // Move left.
@@ -180,7 +180,7 @@ const AiManager = {
           closestSafeRooms2.push(rooms.find(room => room.y > y && !room.knowledge.pit && !room.knowledge.wumpus));
         }
 
-        // Choose the room that has the least visits to move to next.
+        // Choose the room from the available adjacent directions that has the least visits to move to next.
         room = closestSafeRooms2.sort((a, b) => { return a.knowledge.visited - b.knowledge.visited; })[0];
         if (room) {
           return room;
