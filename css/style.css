@@ -130,3 +130,26 @@ fieldset.instructions {
   padding: 0;
   margin: 0;
 }
+
+#knowledgebase {
+  margin-top: 5px;
+}
+#knowledgebase .panel-heading {
+  font-size: 14px;
+  color: slateblue;
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.panel-heading .fa-chevron:after {
+  content: "\f078";
+}
+
+.panel-heading.collapsed .fa-chevron:after {
+  content: "\f054";
+}
+
+footer {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 3px;
+}
