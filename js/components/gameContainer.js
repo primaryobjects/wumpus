@@ -101,7 +101,7 @@ class GameContainer extends React.Component {
             </div>
             <div class='row no-guggers'>
               <div class='col-auto'>
-                <div id='knowledge' dangerouslySetInnerHTML={{__html: this.state.knowledge ? this.state.knowledge.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;').replace('**', '</span>').replace('*', '<span style="color: black;">').replace('$$', '</span>').replace('$', '<span style="color: limegreen;">').replace(/@@@@/g, '</span>').replace(/@@@/g, '<span style="color: red; opacity: .9">').replace(/@@/g, '</span>').replace(/@/g, '<span style="color: red; opacity: .5">') : '' }}></div>
+                <div id='knowledge' dangerouslySetInnerHTML={{__html: this.state.knowledge ? this.state.knowledge.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;').replace('**', '</span>').replace('*', '<span style="color: black;">').replace('$$', '</span>').replace('$', '<span style="color: limegreen;">').replace(/@@@@/g, '</span>').replace(/@@@/g, '<span style="color: red; opacity: .9">').replace(/@@/g, '</span>').replace(/@/g, '<span style="color: red; opacity: .5">').replace(/\^\^\^\^/g, '</span>').replace(/\^\^\^/g, '<span style="color: red; opacity: .9">').replace(/\^\^/g, '</span>').replace(/\^/g, '<span style="color: red; opacity: .5">') : '' }}></div>
               </div>
             </div>
         </div>
