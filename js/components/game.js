@@ -279,7 +279,7 @@ class Game extends React.Component {
 
   print(title, text, color = 'black', icon = WumpusManager.constants.clear, offset = 0, className = null) {
     const message = title ?
-      <div class={`mt-1 pl-0 alert ${className} show`} role="alert" style={{width: '400px'}}>
+      <div class={`mt-1 pl-2 alert ${className} show`} role="alert" style={{width: '400px'}}>
         <div style={{float: 'left'}}>
           <i class={`${WumpusManager.icon(icon)} mr-2`} style={{fontSize: '30px', marginTop: `${offset}px`, color}}></i>
         </div>

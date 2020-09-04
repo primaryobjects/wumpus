@@ -1,10 +1,14 @@
 const AiManager = {
   knowledge: [],
+  path: [],
+  foundLoop: false,
   foundWumpus: false,
 
   initialize: (playerX, playerY, width, height) => {
     AiManager.knowledge = [];
+    AiManager.path = [];
     AiManager.foundWumpus = false;
+    AiManager.foundLoop = false;
 
     for (let y=0; y<height; y++) {
       const row = [];
@@ -42,7 +46,51 @@ const AiManager = {
       AiManager.knowledge[y][x].wumpus = 0;
       AiManager.knowledge[y][x].gold = 0;
 
-      return AiManager.move(x, y);
+      // Choose the next move.
+      // 1,2,3,2,1
+      const move = AiManager.move(x, y);
+      if (move) {
+        AiManager.path.push(`${move.x},${move.y}`);
+        const threshold = 4;
+        if (AiManager.path.length > threshold) {
+          // Check for a repeating loop by detecting a mirror pattern in the array.
+          for (let i=0; i<AiManager.path.length; i++) {
+            let item = AiManager.path[i];
+
+            if (i + (threshold-1) > AiManager.path.length)
+              break;
+
+            // Find the same item anywhere else in the array.
+            let j = AiManager.path.indexOf(item, i + (threshold-1));
+            if (j !== -1) {
+              // Found a match, check for a mirror of entries (left moving forward, right moving backward).
+              let matches = [AiManager.path[i]];
+              i++;
+              j++;
+              while (j < AiManager.path.length) {
+                if (AiManager.path[i] === AiManager.path[j]) {
+                  matches.push(AiManager.path[i]);
+                }
+                else {
+                  break;
+                }
+
+                i++;
+                j++;
+              }
+
+              if (matches.length >= 3) {
+                console.log(`Loop of length ${matches.length} detected: ${matches.join('|')}`);
+                AiManager.foundLoop = true;
+                AiManager.path = [];
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      return move;
     }
   },
 
@@ -120,6 +168,7 @@ const AiManager = {
     !(Adj(R)^B(R)) ^ !(Adj(R)^S(R)) => O(R21)
 
     ^^ This will check all adjacent rooms for breeze or stench. If none, the room is OK.
+    Additionally, when a loop is detected in AI hints, we relax the logical constraints to take more risky moves.
     */
     let room;
 
@@ -128,7 +177,7 @@ const AiManager = {
     // Does an unvisited room contain a probability of gold >= 0.5?
     room = rooms.find(room => !room.knowledge.visited && room.knowledge.gold >= 0.5);
     if (!room) {
-      room = rooms.find(room => !room.knowledge.visited && room.knowledge.gold >= 0.25 && room.knowledge.pit < 0.5 && room.knowledge.wumpus < 0.5);
+      room = rooms.find(room => !room.knowledge.visited && room.knowledge.gold >= 0.25 && (!AiManager.foundLoop ? (!room.knowledge.pit && !room.knowledge.wumpus) : (room.knowledge.pit < 0.5 && room.knowledge.wumpus < 0.5)));
     }
 
     // Does a visited room contain a glitter?
@@ -141,13 +190,35 @@ const AiManager = {
       room = rooms.find(room => !room.knowledge.visited && !room.knowledge.pit && !room.knowledge.wumpus);
     }
 
+    if (AiManager.foundLoop) {
+      // Does an unvisited room contain a probability of a pit < 0.5 and no wumpus?
+      if (!room) {
+        room = rooms.find(room => !room.knowledge.visited && room.knowledge.pit < 0.5 && room.knowledge.wumpus === 0);
+      }
+
+      // Does an unvisited room contain a probability of a wumpus < 0.5 and no pit?
+      if (!room) {
+        room = rooms.find(room => !room.knowledge.visited && room.knowledge.wumpus < 0.5 && room.knowledge.pit === 0);
+      }
+
+      // Does an unvisited room contain a probability of pit and wumpus < 0.5?
+      if (!room) {
+        room = rooms.find(room => !room.knowledge.visited && room.knowledge.pit < 0.5 && room.knowledge.wumpus < 0.5);
+      }
+    }
+
+    if (room && !room.knowledge.visited) {
+      // When stuck in a loop, relax logical constraints until we visit a new cell.
+      AiManager.foundLoop = false;
+    }
+
     // All adjacent rooms are either visited or contain a possible enemy. Is there another unvisited room that is safe?
     if (!room) {
       const closestSafeRooms = [];
       for (let ry=0; ry<AiManager.knowledge.length; ry++) {
-        // Find the least visited safe room.
-        const potentialSafeRoom = AiManager.knowledge[ry].find(knowledge => (knowledge.x !== x || knowledge.y !== y) && !knowledge.pit && !knowledge.wumpus);
-        potentialSafeRoom && closestSafeRooms.push(potentialSafeRoom);
+        // Find all least visited safe rooms in this row.
+        const potentialSafeRooms = AiManager.knowledge[ry].filter(knowledge => (knowledge.x !== x || knowledge.y !== y) && (!AiManager.foundLoop ? (!knowledge.pit && !knowledge.wumpus) : (knowledge.pit < 0.5 && knowledge.wumpus < 0.5)));
+        closestSafeRooms.push.apply(closestSafeRooms, potentialSafeRooms);
       }
 
       // Sort by least visited.
@@ -157,50 +228,41 @@ const AiManager = {
       let closestSafeRoom = {};
       while (closestSafeRoom) {
         closestSafeRoom = closestSafeRooms.pop();
+        if (closestSafeRoom) {
+          // Choose the adjacent room that has the least visits to move to next to reach target.
+          const closestSafeRooms2 = [];
+          if (closestSafeRoom.x < x) {
+            // Move left.
+            closestSafeRooms2.push(rooms.find(room => room.x < x && (!AiManager.foundLoop ? (!room.knowledge.pit && !room.knowledge.wumpus) : (room.knowledge.pit < 0.5 && room.knowledge.wumpus < 0.5))));
+          }
 
-        // Choose the adjacent room that has the least visits to move to next to reach target.
-        const closestSafeRooms2 = [];
-        if (closestSafeRoom.x < x) {
-          // Move left.
-          closestSafeRooms2.push(rooms.find(room => room.x < x && !room.knowledge.pit && !room.knowledge.wumpus));
-        }
+          if (closestSafeRoom.x > x) {
+            // Move right.
+            closestSafeRooms2.push(rooms.find(room => room.x > x && (!AiManager.foundLoop ? (!room.knowledge.pit && !room.knowledge.wumpus) : (room.knowledge.pit < 0.5 && room.knowledge.wumpus < 0.5))));
+          }
 
-        if (closestSafeRoom.x > x) {
-          // Move right.
-          closestSafeRooms2.push(rooms.find(room => room.x > x && !room.knowledge.pit && !room.knowledge.wumpus));
-        }
+          if (closestSafeRoom.y < y) {
+            // Move up.
+            closestSafeRooms2.push(rooms.find(room => room.y < y && (!AiManager.foundLoop ? (!room.knowledge.pit && !room.knowledge.wumpus) : (room.knowledge.pit < 0.5 && room.knowledge.wumpus < 0.5))));
+          }
 
-        if (closestSafeRoom.y < y) {
-          // Move up.
-          closestSafeRooms2.push(rooms.find(room => room.y < y && !room.knowledge.pit && !room.knowledge.wumpus));
-        }
+          if (closestSafeRoom.y > y) {
+            // Move down.
+            closestSafeRooms2.push(rooms.find(room => room.y > y && (!AiManager.foundLoop ? (!room.knowledge.pit && !room.knowledge.wumpus) : (room.knowledge.pit < 0.5 && room.knowledge.wumpus < 0.5))));
+          }
 
-        if (closestSafeRoom.y > y) {
-          // Move down.
-          closestSafeRooms2.push(rooms.find(room => room.y > y && !room.knowledge.pit && !room.knowledge.wumpus));
-        }
+          // Choose the room from the available adjacent directions that has the least visits to move to next.
+          room = closestSafeRooms2.sort((a, b) => { return a.knowledge.visited - b.knowledge.visited; })[0];
+          if (room) {
+            if (!room.knowledge.visited) {
+              // When stuck in a loop, relax logical constraints until we visit a new cell.
+              AiManager.foundLoop = false;
+            }
 
-        // Choose the room from the available adjacent directions that has the least visits to move to next.
-        room = closestSafeRooms2.sort((a, b) => { return a.knowledge.visited - b.knowledge.visited; })[0];
-        if (room) {
-          return room;
+            return room;
+          }
         }
       }
-    }
-
-    // Does an unvisited room contain a probability of a pit < 0.5 and no wumpus?
-    if (!room) {
-      room = rooms.find(room => !room.knowledge.visited && room.knowledge.pit < 0.5 && room.knowledge.wumpus === 0);
-    }
-
-    // Does an unvisited room contain a probability of a wumpus < 0.5 and no pit?
-    if (!room) {
-      room = rooms.find(room => !room.knowledge.visited && room.knowledge.wumpus < 0.5 && room.knowledge.pit === 0);
-    }
-
-    // Does an unvisited room contain a probability of pit and wumpus < 0.5?
-    if (!room) {
-      room = rooms.find(room => !room.knowledge.visited && room.knowledge.pit < 0.5 && room.knowledge.wumpus < 0.5);
     }
 
     // If all else fails, backtrack to a previously visited room.
