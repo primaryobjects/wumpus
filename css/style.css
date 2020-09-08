@@ -153,3 +153,29 @@ footer {
   border-top: 1px solid #e0e0e0;
   padding-top: 3px;
 }
+
+.knowledge {
+  font-family: Courier New;
+  font-size: 12px;
+}
+
+.knowledge .room {
+  border-right: 1px solid gainsboro;
+}
+
+.knowledge .room.active {
+  font-weight: bold;
+}
+
+.knowledge .value {
+  display: inline-block;
+  width: 22px;
+}
+
+.knowledge .value.low {
+  opacity: 0.8;
+}
+
+.knowledge .value.high {
+  font-weight: bold;
+}

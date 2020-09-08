@@ -241,7 +241,7 @@ class Game extends React.Component {
       this.setState({ bestMove });
 
       // Update the knowledge display in the UI.
-      this.props.updateKnowledge(AiManager.toString(this.state.x, this.state.y));
+      this.props.updateKnowledge(this.state.x, this.state.y, AiManager.knowledge);
     }
   }
 

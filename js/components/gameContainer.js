@@ -61,8 +61,8 @@ class GameContainer extends React.Component {
     this.setState({ arrows, arrowState });
   }
 
-  onKnowledge(knowledge) {
-    this.setState({ knowledge });
+  onKnowledge(x, y, knowledge) {
+    this.setState({ x, y, knowledge });
   }
 
   render() {
@@ -106,7 +106,7 @@ class GameContainer extends React.Component {
                   <i class='fa fa-chevron fa-fw' ></i> AI Knowledge
                 </div>
                 <div id='knowledgebaseContainer' class='collapse in'>
-                  <div id='knowledge' dangerouslySetInnerHTML={{__html: this.state.knowledge ? this.state.knowledge.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;').replace('**', '</span>').replace('*', '<span style="color: black;">').replace('$$', '</span>').replace('$', '<span style="color: limegreen;">').replace(/@@@@/g, '</span>').replace(/@@@/g, '<span style="color: red; opacity: .9">').replace(/@@/g, '</span>').replace(/@/g, '<span style="color: red; opacity: .5">').replace(/\^\^\^\^/g, '</span>').replace(/\^\^\^/g, '<span style="color: red; opacity: .9">').replace(/\^\^/g, '</span>').replace(/\^/g, '<span style="color: red; opacity: .5">') : '' }}></div>
+                  <Knowledge value={this.state.knowledge} x={this.state.x} y={this.state.y} />
                 </div>
               </div>
             </div>
