@@ -3,12 +3,14 @@ const AiManager = {
   path: [],
   foundLoop: false,
   foundWumpus: false,
+  foundGold: false,
   recommendedMove: {},
 
   initialize: (x, y, width, height) => {
     AiManager.knowledge = [];
     AiManager.path = [];
     AiManager.foundWumpus = false;
+    AiManager.foundGold = false;
     AiManager.foundLoop = false;
     AiManager.recommendedMove = {};
 
@@ -49,48 +51,7 @@ const AiManager = {
       AiManager.knowledge[y][x].gold = 0;
 
       // Choose the next move.
-      // 1,2,3,2,1
       AiManager.recommendedMove = AiManager.move(x, y);
-      /*if (AiManager.recommendedMove) {
-        AiManager.path.push(`${AiManager.recommendedMove.x},${AiManager.recommendedMove.y}`);
-        const threshold = 4;
-        if (AiManager.path.length > threshold) {
-          // Check for a repeating loop by detecting a mirror pattern in the array.
-          for (let i=0; i<AiManager.path.length; i++) {
-            let item = AiManager.path[i];
-
-            if (i + (threshold-1) > AiManager.path.length)
-              break;
-
-            // Find the same item anywhere else in the array.
-            let j = AiManager.path.indexOf(item, i + (threshold-1));
-            if (j !== -1) {
-              // Found a match, check for a mirror of entries (left moving forward, right moving backward).
-              let matches = [AiManager.path[i]];
-              i++;
-              j++;
-              while (j < AiManager.path.length) {
-                if (AiManager.path[i] === AiManager.path[j]) {
-                  matches.push(AiManager.path[i]);
-                }
-                else {
-                  break;
-                }
-
-                i++;
-                j++;
-              }
-
-              if (matches.length >= 3) {
-                console.log(`Loop of length ${matches.length} detected: ${matches.join('|')}`);
-                AiManager.foundLoop = true;
-                AiManager.path = [];
-                break;
-              }
-            }
-          }
-        }
-      }*/
 
       if (AiManager.recommendedMove.knowledge.visited > 1) {
         !AiManager.foundLoop && console.log('Risky business!');
@@ -160,6 +121,18 @@ const AiManager = {
 
       if (knowledge.glitter && !adjRoom.visited) {
         adjRoom.gold += 0.25;
+
+        // Did we find the gold?
+        AiManager.foundGold = AiManager.foundGold || (adjRoom.gold >= 0.5 ? {x, y} : false);
+        if (AiManager.foundGold) {
+          // Since there is only 1 gold, we can now eliminate all other gold probabilities.
+          for (let ry=0; ry<AiManager.knowledge.length; ry++) {
+            for (let rx=0; rx<AiManager.knowledge[ry].length; rx++) {
+              // Set all other gold probabilities to 0.
+              AiManager.knowledge[ry][rx].gold = AiManager.knowledge[ry][rx].gold >= 0.5 ? AiManager.knowledge[ry][rx].gold : 0;
+            }
+          };
+        }
       }
     }
 
@@ -192,11 +165,8 @@ const AiManager = {
 
     const rooms = AiManager.availableRooms(x, y);
 
-    // Does an unvisited room contain a probability of gold >= 0.5?
-    room = rooms.find(room => !room.knowledge.visited && room.knowledge.gold >= 0.5);
-    if (!room) {
-      room = rooms.find(room => !room.knowledge.visited && room.knowledge.gold >= 0.25 && (!AiManager.foundLoop ? (!room.knowledge.pit && !room.knowledge.wumpus) : (room.knowledge.pit < 0.5 && room.knowledge.wumpus < 0.5)));
-    }
+    // Does a room contain a probability of gold > 0? Select the highest probability room.
+    room = rooms.filter(room => room.knowledge.gold && room.knowledge.gold === Math.max(...rooms.map(room => room.knowledge.gold)) && (room.knowledge.gold >= 0.5 || (!AiManager.foundLoop ? (!room.knowledge.pit && !room.knowledge.wumpus) : (room.knowledge.pit < 0.5 && room.knowledge.wumpus < 0.5))))[0];
 
     // Does a visited room contain a glitter?
     if (!room) {
@@ -231,12 +201,18 @@ const AiManager = {
     }
 
     // All adjacent rooms are either visited or contain a possible enemy. Is there another unvisited room that is safe?
-    if (!room) {
+    if (!room || AiManager.foundGold) {
       const closestSafeRooms = [];
-      for (let ry=0; ry<AiManager.knowledge.length; ry++) {
-        // Find all least visited safe rooms in this row.
-        const potentialSafeRooms = AiManager.knowledge[ry].filter(knowledge => (knowledge.x !== x || knowledge.y !== y) && (!AiManager.foundLoop ? (!knowledge.pit && !knowledge.wumpus) : (knowledge.pit < 0.5 && knowledge.wumpus < 0.5)));
-        closestSafeRooms.push.apply(closestSafeRooms, potentialSafeRooms);
+
+      if (AiManager.foundGold) {
+        closestSafeRooms.push(AiManager.knowledge[AiManager.foundGold.y][AiManager.foundGold.x]);
+      }
+      else {
+        for (let ry=0; ry<AiManager.knowledge.length; ry++) {
+          // Find all least visited safe rooms in this row.
+          const potentialSafeRooms = AiManager.knowledge[ry].filter(knowledge => (knowledge.x !== x || knowledge.y !== y) && (!AiManager.foundLoop ? (!knowledge.pit && !knowledge.wumpus) : (knowledge.pit < 0.5 && knowledge.wumpus < 0.5)));
+          closestSafeRooms.push.apply(closestSafeRooms, potentialSafeRooms);
+        }
       }
 
       // Sort by least visited.
