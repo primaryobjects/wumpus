@@ -8,7 +8,6 @@ class Game extends React.Component {
     this.reset = this.reset.bind(this);
     this.print = this.print.bind(this);
     this.onGrid = this.onGrid.bind(this);
-    this.displayMoves = this.displayMoves.bind(this);
     this.updateAI = this.updateAI.bind(this);
   }
 
@@ -39,8 +38,6 @@ class Game extends React.Component {
   }
 
   componentDidMount() {
-    this.props.cheatMode && this.displayMoves();
-
     // Update the AI agent.
     this.updateAI();
   }
@@ -54,10 +51,6 @@ class Game extends React.Component {
       this.reset();
     }
 
-    if (nextProps.cheatMode !== cheatMode) {
-      this.displayMoves();
-    }
-
     if (nextProps.arrowState !== arrowState) {
       this.update();
     }
@@ -65,29 +58,10 @@ class Game extends React.Component {
 
   reset() {
     this.setState(this.getState(this.props), () => {
-      // Display available player moves, if cheat mode is enabled.
-      this.props.cheatMode && this.displayMoves();
 
       // Update the AI agent.
       setTimeout(() => { this.updateAI(); }, 0);
     });
-  }
-
-  displayMoves() {
-    // Clear moves.
-    this.state && this.state.availableMoves && this.state.availableMoves.forEach(move => {
-      this.grid.current.setValue(move.x, move.y, null);
-    });
-
-    if (this.props.cheatMode) {
-      // Calculate available moves for player.
-      const availableMoves = GameManager.moves(this.state.x, this.state.y, this.props.width, this.props.height);
-      availableMoves.forEach(move => {
-        this.grid.current.setValue(move.x, move.y, 'aliceblue');
-      });
-
-      this.setState({ availableMoves });
-    }
   }
 
   update(room) {
@@ -209,9 +183,6 @@ class Game extends React.Component {
 
         // Update state.
         this.setState({ dungeon, message, x: playerLocation.x, y: playerLocation.y, moves: this.state.moves + 1 }, () => {
-          // Update available player moves.
-          this.props.cheatMode && this.displayMoves();
-
           if (!this.update(this.state.dungeon.map[playerLocation.y][playerLocation.x])) {
             // Game over.
             this.setState({ gameOver: true });
@@ -237,6 +208,17 @@ class Game extends React.Component {
     if (!isGameOver) {
       // Show hint for best move.
       const bestMove = AiManager.update(this.state.x, this.state.y, this.state.dungeon.map[this.state.y][this.state.x]);
+
+      // Show hint for AI path, if one exists.
+      this.oldPath && this.oldPath.forEach(room => {
+        this.grid.current.setValue(room.x, room.y, '');
+      });
+      this.oldPath = AiManager.path;
+      AiManager.path.forEach(room => {
+        this.grid.current.setValue(room.x, room.y, '#f0ffff');
+      });
+
+      // Show best move.
       this.grid.current.setValue(bestMove.x, bestMove.y, 'lavender');
       this.setState({ bestMove });
 
