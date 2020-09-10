@@ -20,7 +20,7 @@ const AStarManager = {
         });
     },
 
-    search: function(grid, start, end, threshold = 0.25, diagonal, heuristic) {
+    search: function(grid, start, end, isBlockFunc, diagonal, heuristic) {
         AStarManager.init(grid);
         heuristic = heuristic || AStarManager.manhattan;
         diagonal = !!diagonal;
@@ -54,7 +54,7 @@ const AStarManager = {
             for(var i=0, il = neighbors.length; i < il; i++) {
                 var neighbor = neighbors[i];
 
-                if(neighbor.closed || neighbor.pit >= threshold || neighbor.wumpus >= threshold/*neighbor.isWall()*/) {
+                if(neighbor.closed || (isBlockFunc && isBlockFunc(neighbor))) {
                     // Not a valid node to process, skip to next neighbor.
                     continue;
                 }

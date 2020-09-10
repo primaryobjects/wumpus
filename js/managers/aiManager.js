@@ -190,8 +190,12 @@ const AiManager = {
         }
       }
 
-      // Sort by least visited.
-      closestSafeRooms.sort((a, b) => { return b.visited - a.visited; });
+      // Sort by least visited, then by distance.
+      closestSafeRooms.sort((a, b) => {
+        // If the number of visits are equal sort by distance instead.
+        return (b.visited - a.visited) || (AStarManager.manhattan({ x, y }, { x: b.x, y: b.y }) - AStarManager.manhattan({ x, y }, { x: a.x, y: a.y }));
+      });
+
       const originalSafeRooms = Object.assign([], closestSafeRooms);
 
       // Finally, move in the safest direction of the room found.
@@ -199,8 +203,9 @@ const AiManager = {
       while (target) {
         target = closestSafeRooms.pop();
         if (target) {
-          AiManager.path = AStarManager.search(AiManager.knowledge, AiManager.knowledge[y][x], target);
-          if (AiManager.path && AiManager.path.length) {
+          // Find a safe path from the current position to the target room, avoid all potential wumpus or pits.
+          AiManager.path = AStarManager.search(AiManager.knowledge, AiManager.knowledge[y][x], target, room => { return room.pit || room.wumpus });
+          if (AiManager.path.length) {
             const next = AiManager.path[0];
             room = { x: next.x, y: next.y, knowledge: AiManager.knowledge[next.y][next.x] };
             break;
@@ -215,8 +220,9 @@ const AiManager = {
         while (target) {
           target = originalSafeRooms.pop();
           if (target) {
-            AiManager.path = AStarManager.search(AiManager.knowledge, AiManager.knowledge[y][x], target, 0.5);
-            if (AiManager.path && AiManager.path.length) {
+            // Find a safe path from the current position to the target room, avoid all certain wumpus or pits.
+            AiManager.path = AStarManager.search(AiManager.knowledge, AiManager.knowledge[y][x], target, room => { return room.pit >= 0.5 || room.wumpus >= 0.5 });
+            if (AiManager.path.length) {
               const next = AiManager.path[0];
               room = { x: next.x, y: next.y, knowledge: AiManager.knowledge[next.y][next.x] };
               break;
