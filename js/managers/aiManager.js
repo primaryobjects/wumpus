@@ -199,7 +199,7 @@ const AiManager = {
       while (target) {
         target = closestSafeRooms.pop();
         if (target) {
-          AiManager.path = astar.search(AiManager.knowledge, AiManager.knowledge[y][x], target);
+          AiManager.path = AStarManager.search(AiManager.knowledge, AiManager.knowledge[y][x], target);
           if (AiManager.path && AiManager.path.length) {
             const next = AiManager.path[0];
             room = { x: next.x, y: next.y, knowledge: AiManager.knowledge[next.y][next.x] };
@@ -215,7 +215,7 @@ const AiManager = {
         while (target) {
           target = originalSafeRooms.pop();
           if (target) {
-            AiManager.path = astar.search(AiManager.knowledge, AiManager.knowledge[y][x], target, 0.5);
+            AiManager.path = AStarManager.search(AiManager.knowledge, AiManager.knowledge[y][x], target, 0.5);
             if (AiManager.path && AiManager.path.length) {
               const next = AiManager.path[0];
               room = { x: next.x, y: next.y, knowledge: AiManager.knowledge[next.y][next.x] };

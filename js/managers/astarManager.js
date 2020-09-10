@@ -1,4 +1,4 @@
-var astar = {
+const AStarManager = {
     init: function(grid) {
         for(var y = 0, yl = grid.length; y < yl; y++) {
             for(var x = 0, xl = grid[y].length; x < xl; x++) {
@@ -13,17 +13,19 @@ var astar = {
             }
         }
     },
+
     heap: function() {
         return new BinaryHeap(function(node) {
             return node.f;
         });
     },
+
     search: function(grid, start, end, threshold = 0.25, diagonal, heuristic) {
-        astar.init(grid);
-        heuristic = heuristic || astar.manhattan;
+        AStarManager.init(grid);
+        heuristic = heuristic || AStarManager.manhattan;
         diagonal = !!diagonal;
 
-        var openHeap = astar.heap();
+        var openHeap = AStarManager.heap();
 
         openHeap.push(start);
 
@@ -47,7 +49,7 @@ var astar = {
             currentNode.closed = true;
 
             // Find all neighbors for the current node. Optionally find diagonal neighbors as well (false by default).
-            var neighbors = astar.neighbors(grid, currentNode, diagonal);
+            var neighbors = AStarManager.neighbors(grid, currentNode, diagonal);
 
             for(var i=0, il = neighbors.length; i < il; i++) {
                 var neighbor = neighbors[i];
@@ -63,7 +65,6 @@ var astar = {
                 var beenastarVisited = neighbor.astarvisited;
 
                 if(!beenastarVisited || gScore < neighbor.g) {
-
                     // Found an optimal (so far) path to this node.  Take score for node to see how good it is.
                     neighbor.astarvisited = true;
                     neighbor.parent = currentNode;
@@ -86,13 +87,14 @@ var astar = {
         // No result was found - empty array signifies failure to find path.
         return [];
     },
+
     manhattan: function(pos0, pos1) {
         // See list of heuristics: http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html
-
         var d1 = Math.abs (pos1.x - pos0.x);
         var d2 = Math.abs (pos1.y - pos0.y);
         return d1 + d2;
     },
+
     neighbors: function(grid, node, diagonals) {
         var ret = [];
         var x = node.x;
@@ -118,46 +120,47 @@ var astar = {
             ret.push(grid[y-1][x]);
         }
 
-        /*if (diagonals) {
+        if (diagonals) {
             // Southwest
-            if(grid[x-1] && grid[x-1][y-1]) {
-                ret.push(grid[x-1][y-1]);
+            if(grid[y+1] && grid[y+1][x-1]) {
+                ret.push(grid[y+1][x-1]);
             }
 
             // Southeast
-            if(grid[x+1] && grid[x+1][y-1]) {
-                ret.push(grid[x+1][y-1]);
+            if(grid[y+1] && grid[y+1][x+1]) {
+                ret.push(grid[y+1][x+1]);
             }
 
             // Northwest
-            if(grid[x-1] && grid[x-1][y+1]) {
-                ret.push(grid[x-1][y+1]);
+            if(grid[y-1] && grid[y-1][x-1]) {
+                ret.push(grid[y-1][x-1]);
             }
 
             // Northeast
-            if(grid[x+1] && grid[x+1][y+1]) {
-                ret.push(grid[x+1][y+1]);
+            if(grid[y-1] && grid[y-1][x+1]) {
+                ret.push(grid[y-1][x+1]);
             }
-        }*/
+        }
 
         return ret;
     }
 };
 
-function BinaryHeap(scoreFunction) {
-  this.content = [];
-  this.scoreFunction = scoreFunction;
-}
+class BinaryHeap {
+  constructor(scoreFunction) {
+    this.content = [];
+    this.scoreFunction = scoreFunction;
+  }
 
-BinaryHeap.prototype = {
-  push: function(element) {
+  push(element) {
     // Add the new element to the end of the array.
     this.content.push(element);
 
     // Allow it to sink down.
     this.sinkDown(this.content.length - 1);
-  },
-  pop: function() {
+  }
+
+  pop() {
     // Store the first element so we can return it later.
     var result = this.content[0];
     // Get the element at the end of the array.
@@ -169,8 +172,9 @@ BinaryHeap.prototype = {
       this.bubbleUp(0);
     }
     return result;
-  },
-  remove: function(node) {
+  }
+
+  remove(node) {
     var i = this.content.indexOf(node);
 
     // When it is found, the process seen in 'pop' is repeated
@@ -186,14 +190,17 @@ BinaryHeap.prototype = {
         this.bubbleUp(i);
       }
     }
-  },
-  size: function() {
+  }
+
+  size() {
     return this.content.length;
-  },
-  rescoreElement: function(node) {
+  }
+
+  rescoreElement(node) {
     this.sinkDown(this.content.indexOf(node));
-  },
-  sinkDown: function(n) {
+  }
+
+  sinkDown(n) {
     // Fetch the element that has to be sunk.
     var element = this.content[n];
 
@@ -215,8 +222,9 @@ BinaryHeap.prototype = {
         break;
       }
     }
-  },
-  bubbleUp: function(n) {
+  }
+
+  bubbleUp(n) {
     // Look up the target element and its score.
     var length = this.content.length;
     var element = this.content[n];
@@ -262,4 +270,4 @@ BinaryHeap.prototype = {
       }
     }
   }
-};
+}
