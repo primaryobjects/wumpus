@@ -30,6 +30,7 @@ class Game extends React.Component {
       x: 0,
       y: props.height - 1,
       moves: 0,
+      score: 0,
       gameOver: false,
       message: null,
       arrow: null,
@@ -84,6 +85,8 @@ class Game extends React.Component {
     }
 
     if (room) {
+      let score = this.state.score;
+
       // Check percepts.
       if (room.includes(WumpusManager.constants.breeze)) {
         console.log('You feel a breeze.');
@@ -99,20 +102,31 @@ class Game extends React.Component {
 
       // Check end game conditions.
       if (room.includes(WumpusManager.constants.gold)) {
-        console.log('You found the gold! You win!');
-        this.print('You win!', `You found the treasure in ${this.state.moves} moves!`, 'gold', WumpusManager.constants.gold, 0, 'alert-warning');
+        score += 100;
+
+        console.log(`You found the treasure in ${this.state.moves} moves! Score: ${score}`);
+        this.print('You win!', `You found the treasure in ${this.state.moves} moves! Score: ${score}`, 'gold', WumpusManager.constants.gold, 0, 'alert-warning');
+
         gameOk = false;
       }
       else if (room.includes(WumpusManager.constants.wumpus)) {
         console.log('You are eaten by the Wumpus! You lose!');
         this.print('You lose!', 'You were eaten by the Wumpus!', 'red', WumpusManager.constants.wumpus, -5, 'alert-danger');
+
+        score -= 1000;
+
         gameOk = false;
       }
       else if (room.includes(WumpusManager.constants.pit)) {
         console.log('You fall in a pit! You lose!');
         this.print('You lose!', 'You fall into a deep dark pit.', 'black', WumpusManager.constants.crossbones, -2, 'alert-danger');
+
+        score -= 1000;
+
         gameOk = false;
       }
+
+      score && this.setState({ score });
     }
 
     // Update the AI agent.
@@ -126,6 +140,8 @@ class Game extends React.Component {
       const dungeon = this.state.dungeon;
       let playerLocation = { x: this.state.x, y: this.state.y };
       let message = null;
+      let score = this.state.score;
+      let moves = this.state.moves;
 
       if (this.state.gameOver) {
         // When the game is over, the next click resets the game.
@@ -172,6 +188,9 @@ class Game extends React.Component {
             dungeon.map[this.state.dungeon.wumpus.y][this.state.dungeon.wumpus.x].splice(index);
           }
 
+          // Subtract one point from the score for each move.
+          score--;
+
           // Callback handler for parent container to update the arrow count and disable the shoot button.
           this.props.updateArrows(this.props.arrows - 1, arrowState);
         }
@@ -179,10 +198,16 @@ class Game extends React.Component {
         if (isMove && GameManager.isValidMove(x, y, this.state.x, this.state.y, this.grid.current.props.width, this.grid.current.props.height)) {
           // Update player location with new mofve.
           playerLocation = { x, y };
+
+          if (this.state.x !== x || this.state.y !== y) {
+            // Subtract one point from the score for each move.
+            moves++;
+            score--;
+          }
         }
 
         // Update state.
-        this.setState({ dungeon, message, x: playerLocation.x, y: playerLocation.y, moves: this.state.moves + 1 }, () => {
+        this.setState({ dungeon, message, moves, score, x: playerLocation.x, y: playerLocation.y }, () => {
           if (!this.update(this.state.dungeon.map[playerLocation.y][playerLocation.x])) {
             // Game over.
             this.setState({ gameOver: true });
