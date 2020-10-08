@@ -134,9 +134,9 @@ fieldset.instructions {
 #knowledgebase {
   margin-top: 5px;
 }
-#knowledgebase .panel-heading {
-  font-size: 14px;
-  color: slateblue;
+
+.panel-heading {
+  color: blue;
   opacity: 0.5;
   cursor: pointer;
 }

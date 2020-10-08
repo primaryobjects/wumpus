@@ -2,7 +2,7 @@
 <html lang="en" >
   <head>
     <meta charset="UTF-8">
-    <title>Hunt the Wumpus - AI Game Using Logical Artificial Intelligence</title>
+    <title>Wumpus World - AI Game Using Logical Artificial Intelligence</title>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css'>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css'>
     <link rel="stylesheet" href="css/style.css">
@@ -11,7 +11,7 @@
     <div class='container'>
       <div class='row'>
         <div class='col'>
-          <h1>Hunt the Wumpus</h1>
+          <h1>Wumpus World</h1>
           <p class="lead text-muted">Navigate the dungeon. Avoid the pits. Find the gold. Beware of the Wumpus!</p>
         </div>
       </div>
@@ -57,6 +57,46 @@
            </fieldset>
         </div>
       </div>
+
+      <div class='row mt-3'>
+        <div class='col'>
+          <div class='panel panel-default'>
+            <div class='panel-heading collapsed' data-toggle='collapse' data-target='#aboutContainer'>
+              <i class='fa fa-chevron fa-fw' ></i> About Wumpus World
+            </div>
+            <div id='aboutContainer' class='collapse in'>
+              <p>
+                Wumpus World (also called Hunt the Wumpus) is a dungeon crawling game where the player must navigate a dungeon in order to find the treasure.
+                As the player enters each room, they will be able to perceive certain effects. The effects include a breeze, which indicates a pit is nearby in an adjacent room; a stench, which indicates a monster is in an adjacent room;
+                and a glitter, which indicates the treasure is in an adjacent room.
+              </p>
+              <p>
+                The player must use the perception hints within each room in order to determine which room is safe to move to next. If the player enters a room containing a pit or wumpus, the game is over.
+              </p>
+              <p>
+                Wumpus World is used as a demonstration of applying artificial intelligence concepts to a discrete, deterministic, single-player environment. In this environment, the player (or computer agent) has the ability
+                to make decisions upon which action to take next in order to achieve the desired goal of finding the treasure and avoiding obstacles. The player or artificial intelligence agent is able to build a knowledge-base of the dungeon
+                layout and rooms as they obtain more hints and perceptions within their environment. In this manner, the player or AI can logically deduce which rooms contain obstacles and which rooms are deemed to be safe. For example, if the AI
+                determines that one particular room contains a breeze, then moves to the right and up a room (diagonal to the initial room) and they perceive another breeze, they can
+                reasonably deduce that the encircled room contains a pit, with a degree of accuracy.
+              </p>
+              <p>
+                Wumpus World and Hunt the Wumpus allows the application of many different types of artificial intelligence techniques. These include symbolic AI and logical-based AI for implementing predicate and first-order logic to calculate likelihoods of conditions within each room.
+                It also allows application of AI algorithms such as neural networks, deep learning, and machine learning for training a neural network on a pre-existing data-set of acceptable moves given certain conditions on the map and the state of the player. The machine learning algorithm, using such a training set,
+                can allow the AI to navigate to safe rooms, when a recognized or similar player and map state is presented. Genetic algorithms and evolutionary computation may also be used to train a neural network for learning the most optimal moves given a state on the board. When applying a genetic algorithm to a neural network (in place of a training-set),
+                the AI can learn the best weights to apply to the nodes of the neural network in order to play an optimal game.
+              </p>
+              <p>
+                Wumpus World is developed in HTML and Javascript using React and Twitter Bootstrap.
+              </p>
+              <p>
+                Source code is available on <a href='https://github.com/primaryobjects/wumpus' target='_blank'>GitHub</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class='row mt-4'>
         <div class='col'>
           <footer class="text-muted">
