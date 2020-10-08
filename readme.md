@@ -37,12 +37,6 @@ When the player enters a room with an adjacent room containing an item, they wil
 - Stench: A wumpus is nearby.
 - Glitter: The gold is nearby.
 
-## How to Play
-
-## AI Player
-
-## Running the Game
-
 ## How is it Made?
 
 Wumpus World is developed with Javascript, React, Twitter Bootstrap.
