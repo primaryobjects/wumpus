@@ -7,6 +7,8 @@ Artificial intelligence game, powered by logical and symbolic AI.
 
 [Play Online](http://primaryobjects.github.io/wumpus/)
 
+Read the full article [Designing an Artificial Intelligence Agent to Navigate a World](http://www.primaryobjects.com/2020/10/26/designing-an-artificial-intelligence-agent-to-navigate-a-world/).
+
 ## What is it?
 
 Wumpus World (also called Hunt the Wumpus) is a dungeon crawling game where the player must navigate a dungeon in order to find the treasure. As the player enters each room, they will be able to perceive certain effects. The effects include a breeze, which indicates a pit is nearby in an adjacent room; a stench, which indicates a monster is in an adjacent room; and a glitter, which indicates the treasure is in an adjacent room.
